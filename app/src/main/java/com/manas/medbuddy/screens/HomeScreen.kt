@@ -34,7 +34,12 @@ import com.manas.medbuddy.ui.theme.*
 
 @Composable
 fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
-    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    val userId = try {
+        FirebaseAuth.getInstance().currentUser?.uid
+    } catch (e: Exception) {
+        null // Firebase is not initialized, fallback to null for UI testing
+    }
+    
     var medicines by remember { mutableStateOf<List<Medicine>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
 
@@ -45,16 +50,21 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
             loading = false
             onDispose { }
         } else {
-            val reference = FirebaseDatabase.getInstance().reference.child("medicines").child(userId)
-            val listener = object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    medicines = snapshot.children.mapNotNull { child -> child.getValue(Medicine::class.java)?.copy(id = child.key ?: "") }
-                    loading = false
+            try {
+                val reference = FirebaseDatabase.getInstance().reference.child("medicines").child(userId)
+                val listener = object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        medicines = snapshot.children.mapNotNull { child -> child.getValue(Medicine::class.java)?.copy(id = child.key ?: "") }
+                        loading = false
+                    }
+                    override fun onCancelled(error: DatabaseError) { loading = false }
                 }
-                override fun onCancelled(error: DatabaseError) { loading = false }
+                reference.addValueEventListener(listener)
+                onDispose { reference.removeEventListener(listener) }
+            } catch (e: Exception) {
+                loading = false
+                onDispose { }
             }
-            reference.addValueEventListener(listener)
-            onDispose { reference.removeEventListener(listener) }
         }
     }
 
@@ -138,7 +148,10 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
                     )
                 }
                 
-                TextButton(onClick = { FirebaseAuth.getInstance().signOut(); onLogout() }) { 
+                TextButton(onClick = { 
+                    try { FirebaseAuth.getInstance().signOut() } catch (e: Exception) {}
+                    onLogout() 
+                }) { 
                     Text("Log out", color = MaterialTheme.colorScheme.error) 
                 }
             }
