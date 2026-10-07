@@ -12,7 +12,10 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Warning
+import java.util.Calendar
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,7 +36,7 @@ import com.manas.medbuddy.ui.components.GlassCard
 import com.manas.medbuddy.ui.theme.*
 
 @Composable
-fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
+fun HomeScreen(onNavigateToMedicines: () -> Unit, onLogout: () -> Unit) {
     val userId = try {
         FirebaseAuth.getInstance().currentUser?.uid
     } catch (e: Exception) {
@@ -42,8 +45,17 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
     
     var medicines by remember { mutableStateOf<List<Medicine>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
+    var waterIntake by remember { mutableStateOf(0) }
 
     val themeMode = LocalThemeMode.current
+
+    // Time-based greeting
+    val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    val greeting = when (currentHour) {
+        in 0..11 -> "Good morning"
+        in 12..16 -> "Good afternoon"
+        else -> "Good evening"
+    }
 
     DisposableEffect(userId) {
         if (userId == null) {
@@ -133,8 +145,8 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
             // Header
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Good morning,", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp)
-                    Text("Your Health Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("$greeting,", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp)
+                    Text("User", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 }
                 
                 // Theme Toggle
@@ -156,21 +168,34 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
                 }
             }
 
-            // Health Score Ring
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                AnimatedProgressRing(
-                    progress = 0.85f,
-                    modifier = Modifier.size(160.dp),
-                    colors = listOf(MaterialTheme.colorScheme.primary, VioletGradient),
-                    strokeWidth = 24f
-                )
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("85", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                    Text("Health Score", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            // Medicines Section (Clickable)
+            Surface(
+                onClick = onNavigateToMedicines,
+                color = Color.Transparent,
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                GlassCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Text("Your Medicines", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                            Text("View All >", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                        }
+                        
+                        val nextMed = medicines.firstOrNull()
+                        if (nextMed != null) {
+                            Text("Next up: ${nextMed.name}", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Text("${nextMed.dosage} at ${nextMed.time}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        } else {
+                            Text(if (loading) "Loading..." else "No medicine scheduled", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Text(if (loading) "Please wait" else "Tap here to add medicines", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
                 }
             }
 
-            // Metrics Grid
+            // Health Section
+            Text("Health Overview", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
                     MetricCard("Steps", "8,432", "Goal: 10k", Modifier.weight(1f))
@@ -178,42 +203,36 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
                     MetricCard("Calories", "420 kcal", "Active", Modifier.weight(1f))
-                    MetricCard("Water", "1.5 L", "Goal: 2.5 L", Modifier.weight(1f))
+                    // Water Intake with Manual Adder
+                    GlassCard(modifier = Modifier.weight(1f)) {
+                        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text("Water", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                            Text("$waterIntake / 8", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Text("Glasses", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
+                                Row {
+                                    IconButton(
+                                        onClick = { if (waterIntake > 0) waterIntake-- },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(Icons.Default.Remove, contentDescription = "Decrease", tint = MaterialTheme.colorScheme.onSurface)
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    IconButton(
+                                        onClick = { waterIntake++ },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(Icons.Default.Add, contentDescription = "Increase", tint = MaterialTheme.colorScheme.primary)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
                     MetricCard("Sleep", "7h 20m", "Restful", Modifier.weight(1f))
-                    MetricCard("Medicines", if (loading) "-" else "${medicines.size} scheduled", "Today", Modifier.weight(1f))
+                    MetricCard("Heart Rate", "72 bpm", "Resting", Modifier.weight(1f))
                 }
-            }
-
-            // Next Reminder
-            GlassCard(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Your next reminder", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
-                    val nextMed = medicines.firstOrNull()
-                    if (nextMed != null) {
-                        Text(nextMed.name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                        Text("${nextMed.dosage} at ${nextMed.time}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    } else {
-                        Text(if (loading) "Loading..." else "No medicine added", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                        Text(if (loading) "Please wait" else "Add your first medicine below", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-            }
-
-            // Actions
-            Text("Quick actions", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
-                ActionCard("Health Log", Modifier.weight(1f), onClick = {})
-            }
-
-            // Medicines List
-            Text("My medicines", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-            when {
-                loading -> Text("Loading medicines...", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                medicines.isEmpty() -> Text("No medicines yet. Tap Add Medicine to begin.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                else -> medicines.forEach { MedicineCard(it) }
             }
             
             Spacer(modifier = Modifier.height(40.dp)) // Space for FAB
