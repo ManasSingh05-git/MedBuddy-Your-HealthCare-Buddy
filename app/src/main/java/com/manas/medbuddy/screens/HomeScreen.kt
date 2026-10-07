@@ -7,20 +7,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -42,6 +38,8 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
     var medicines by remember { mutableStateOf<List<Medicine>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
 
+    val themeMode = LocalThemeMode.current
+
     DisposableEffect(userId) {
         if (userId == null) {
             loading = false
@@ -50,7 +48,7 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
             val reference = FirebaseDatabase.getInstance().reference.child("medicines").child(userId)
             val listener = object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    medicines = snapshot.children.mapNotNull { child: DataSnapshot -> child.getValue(Medicine::class.java)?.copy(id = child.key ?: "") }
+                    medicines = snapshot.children.mapNotNull { child -> child.getValue(Medicine::class.java)?.copy(id = child.key ?: "") }
                     loading = false
                 }
                 override fun onCancelled(error: DatabaseError) { loading = false }
@@ -61,11 +59,11 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
     }
 
     Scaffold(
-        containerColor = DarkBackground,
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { /* TODO SOS Action */ },
-                containerColor = SOSRed,
+                containerColor = MaterialTheme.colorScheme.error,
                 contentColor = Color.White,
                 shape = CircleShape,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -76,8 +74,8 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
         floatingActionButtonPosition = FabPosition.Center,
         bottomBar = {
             NavigationBar(
-                containerColor = DarkSurface.copy(alpha = 0.9f),
-                contentColor = CyanPrimary,
+                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                contentColor = MaterialTheme.colorScheme.primary,
                 tonalElevation = 8.dp
             ) {
                 NavigationBarItem(
@@ -85,21 +83,31 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
                     label = { Text("Home") },
                     selected = true,
                     onClick = { },
-                    colors = NavigationBarItemDefaults.colors(selectedIconColor = CyanPrimary, unselectedIconColor = TextSecondary, indicatorColor = DarkSurface)
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        indicatorColor = MaterialTheme.colorScheme.surface
+                    )
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
                     label = { Text("Profile") },
                     selected = false,
                     onClick = { },
-                    colors = NavigationBarItemDefaults.colors(selectedIconColor = CyanPrimary, unselectedIconColor = TextSecondary)
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
                     label = { Text("Settings") },
                     selected = false,
                     onClick = { },
-                    colors = NavigationBarItemDefaults.colors(selectedIconColor = CyanPrimary, unselectedIconColor = TextSecondary)
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
             }
         }
@@ -115,11 +123,23 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
             // Header
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Good morning,", color = TextSecondary, fontSize = 16.sp)
-                    Text("Your Health Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    Text("Good morning,", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp)
+                    Text("Your Health Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 }
+                
+                // Theme Toggle
+                IconButton(onClick = {
+                    themeMode.value = if (themeMode.value == ThemeMode.LIGHT) ThemeMode.DARK else ThemeMode.LIGHT
+                }) {
+                    Icon(
+                        imageVector = if (themeMode.value == ThemeMode.LIGHT) Icons.Default.DarkMode else Icons.Default.LightMode,
+                        contentDescription = "Toggle Theme",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                
                 TextButton(onClick = { FirebaseAuth.getInstance().signOut(); onLogout() }) { 
-                    Text("Log out", color = SOSRed) 
+                    Text("Log out", color = MaterialTheme.colorScheme.error) 
                 }
             }
 
@@ -128,12 +148,12 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
                 AnimatedProgressRing(
                     progress = 0.85f,
                     modifier = Modifier.size(160.dp),
-                    colors = listOf(CyanPrimary, VioletGradient),
+                    colors = listOf(MaterialTheme.colorScheme.primary, VioletGradient),
                     strokeWidth = 24f
                 )
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("85", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                    Text("Health Score", fontSize = 14.sp, color = TextSecondary)
+                    Text("85", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Health Score", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
@@ -156,30 +176,30 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
             // Next Reminder
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Your next reminder", color = CyanPrimary, fontWeight = FontWeight.Medium)
+                    Text("Your next reminder", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
                     val nextMed = medicines.firstOrNull()
                     if (nextMed != null) {
-                        Text(nextMed.name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                        Text("${nextMed.dosage} at ${nextMed.time}", color = TextSecondary)
+                        Text(nextMed.name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        Text("${nextMed.dosage} at ${nextMed.time}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     } else {
-                        Text(if (loading) "Loading..." else "No medicine added", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                        Text(if (loading) "Please wait" else "Add your first medicine below", color = TextSecondary)
+                        Text(if (loading) "Loading..." else "No medicine added", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        Text(if (loading) "Please wait" else "Add your first medicine below", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
 
             // Actions
-            Text("Quick actions", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+            Text("Quick actions", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
                 ActionCard("Health Log", Modifier.weight(1f), onClick = {})
             }
 
             // Medicines List
-            Text("My medicines", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+            Text("My medicines", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
             when {
-                loading -> Text("Loading medicines...", color = TextSecondary)
-                medicines.isEmpty() -> Text("No medicines yet. Tap Add Medicine to begin.", color = TextSecondary)
+                loading -> Text("Loading medicines...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                medicines.isEmpty() -> Text("No medicines yet. Tap Add Medicine to begin.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 else -> medicines.forEach { MedicineCard(it) }
             }
             
@@ -192,9 +212,9 @@ fun HomeScreen(onAddMedicine: () -> Unit, onLogout: () -> Unit) {
 private fun MetricCard(title: String, value: String, subtitle: String, modifier: Modifier) {
     GlassCard(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(title, color = TextSecondary, fontSize = 14.sp)
-            Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-            Text(subtitle, color = CyanPrimary, fontSize = 12.sp)
+            Text(title, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+            Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
         }
     }
 }
@@ -213,7 +233,7 @@ private fun ActionCard(title: String, modifier: Modifier, onClick: () -> Unit) {
                 .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text(title, fontWeight = FontWeight.Medium, color = TextPrimary)
+            Text(title, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }
@@ -222,8 +242,8 @@ private fun ActionCard(title: String, modifier: Modifier, onClick: () -> Unit) {
 private fun MedicineCard(medicine: Medicine) {
     GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(medicine.name, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = TextPrimary)
-            Text("${medicine.dosage} - ${medicine.time}", color = TextSecondary)
+            Text(medicine.name, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text("${medicine.dosage} - ${medicine.time}", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

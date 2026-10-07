@@ -20,17 +20,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import androidx.compose.material3.Surface
+
 @Composable
 fun ForgotPasswordScreen(onBack: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var sent by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 48.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp, vertical = 48.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp)
+        ) {
         Text("Reset password", fontSize = 30.sp, fontWeight = FontWeight.Bold)
         Text("Enter your email and we’ll send a reset link.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         OutlinedTextField(
@@ -46,4 +52,5 @@ fun ForgotPasswordScreen(onBack: () -> Unit) {
         }
         TextButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) { Text("Back to sign in") }
     }
+}
 }

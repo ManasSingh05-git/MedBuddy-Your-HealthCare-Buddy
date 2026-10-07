@@ -5,13 +5,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,24 +22,44 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.manas.medbuddy.ui.theme.BlueGradient
 import com.manas.medbuddy.ui.theme.CyanPrimary
-import com.manas.medbuddy.ui.theme.GlassBackground
-import com.manas.medbuddy.ui.theme.GlassBorder
+import com.manas.medbuddy.ui.theme.GlassBackgroundDark
+import com.manas.medbuddy.ui.theme.GlassBackgroundLight
+import com.manas.medbuddy.ui.theme.GlassBorderDark
+import com.manas.medbuddy.ui.theme.GlassBorderLight
+import com.manas.medbuddy.ui.theme.LocalThemeMode
+import com.manas.medbuddy.ui.theme.ThemeMode
+
+@Composable
+fun getGlassColors(): Pair<Color, Color> {
+    val themeMode = LocalThemeMode.current.value
+    val isSystemDark = isSystemInDarkTheme()
+    val isDark = when (themeMode) {
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+        ThemeMode.SYSTEM -> isSystemDark
+    }
+    return if (isDark) {
+        Pair(GlassBackgroundDark, GlassBorderDark)
+    } else {
+        Pair(GlassBackgroundLight, GlassBorderLight)
+    }
+}
 
 @Composable
 fun GlassCard(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
+    val (glassBg, glassBorder) = getGlassColors()
+    
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
-        color = GlassBackground,
-        border = BorderStroke(1.dp, GlassBorder)
+        color = glassBg,
+        border = BorderStroke(1.dp, glassBorder)
     ) {
         content()
     }
@@ -55,6 +72,7 @@ fun AnimatedProgressRing(
     colors: List<Color> = listOf(CyanPrimary, BlueGradient),
     strokeWidth: Float = 20f
 ) {
+    val (glassBg, _) = getGlassColors()
     var animationPlayed by remember { mutableStateOf(false) }
     val animatedProgress by animateFloatAsState(
         targetValue = if (animationPlayed) progress else 0f,
@@ -73,7 +91,7 @@ fun AnimatedProgressRing(
             
             // Background track
             drawCircle(
-                color = GlassBackground,
+                color = glassBg,
                 radius = radius,
                 center = center,
                 style = Stroke(width = strokeWidth)
