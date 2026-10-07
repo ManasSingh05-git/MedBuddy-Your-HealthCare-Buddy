@@ -11,6 +11,7 @@ import com.manas.medbuddy.screens.LoginScreen
 import com.manas.medbuddy.screens.SignupScreen
 import com.manas.medbuddy.screens.SplashScreen
 import com.manas.medbuddy.screens.MedicineScreen
+import com.manas.medbuddy.screens.HealthScreen
 
 object Routes {
     const val Splash = "splash"
@@ -19,6 +20,7 @@ object Routes {
     const val ForgotPassword = "forgot_password"
     const val Home = "home"
     const val Medicines = "medicines"
+    const val Health = "health"
 }
 
 @Composable
@@ -50,6 +52,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         composable(Routes.Home) {
             HomeScreen(
                 onNavigateToMedicines = { navController.navigate(Routes.Medicines) },
+                onNavigateToHealth = { navController.navigate(Routes.Health) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) { inclusive = true }
@@ -59,6 +62,9 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         }
         composable(Routes.Medicines) {
             MedicineScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Routes.Health) {
+            HealthScreen(onBack = { navController.popBackStack() })
         }
     }
 }
