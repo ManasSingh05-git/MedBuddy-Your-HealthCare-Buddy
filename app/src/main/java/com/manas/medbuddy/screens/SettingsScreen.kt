@@ -34,7 +34,11 @@ fun SettingsScreen(
     val context = LocalContext.current
     val repository = remember { EmergencyContactRepository.getInstance(context) }
     val contacts = repository.getContacts()
-    val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: "User"
+    val userEmail = try {
+        FirebaseAuth.getInstance().currentUser?.email ?: "Guest User"
+    } catch (_: Exception) {
+        "Guest User"
+    }
 
     Scaffold(
         containerColor = DarkBackground,
@@ -97,7 +101,7 @@ fun SettingsScreen(
             ) {
                 Surface(
                     onClick = {
-                        FirebaseAuth.getInstance().signOut()
+                        try { FirebaseAuth.getInstance().signOut() } catch (_: Exception) {}
                         onLogout()
                     },
                     color = androidx.compose.ui.graphics.Color.Transparent
