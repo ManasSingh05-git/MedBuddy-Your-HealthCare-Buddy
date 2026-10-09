@@ -8,7 +8,9 @@ import androidx.navigation.compose.rememberNavController
 import com.manas.medbuddy.screens.ForgotPasswordScreen
 import com.manas.medbuddy.screens.HomeScreen
 import com.manas.medbuddy.screens.LoginScreen
+import com.manas.medbuddy.screens.SettingsScreen
 import com.manas.medbuddy.screens.SignupScreen
+import com.manas.medbuddy.screens.SosSettingsScreen
 import com.manas.medbuddy.screens.SplashScreen
 import com.manas.medbuddy.screens.MedicineScreen
 import com.manas.medbuddy.screens.HealthScreen
