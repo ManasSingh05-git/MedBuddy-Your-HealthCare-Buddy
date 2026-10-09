@@ -19,6 +19,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.manas.medbuddy.ui.theme.DarkBackground
+import com.manas.medbuddy.ui.theme.SOSRed
+import com.manas.medbuddy.ui.theme.TextPrimaryDark as TextPrimary
+import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
+import com.manas.medbuddy.ui.components.GlassCard
 import com.google.firebase.auth.FirebaseAuth
 import com.manas.medbuddy.data.repository.EmergencyContactRepository
 import com.manas.medbuddy.ui.components.GlassCard

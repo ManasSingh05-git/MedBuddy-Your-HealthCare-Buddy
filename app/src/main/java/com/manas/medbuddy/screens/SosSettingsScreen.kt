@@ -27,8 +27,14 @@ import androidx.compose.ui.unit.sp
 import com.manas.medbuddy.data.model.EmergencyContact
 import com.manas.medbuddy.data.repository.EmergencyContactRepository
 import com.manas.medbuddy.ui.components.GlassCard
-import com.manas.medbuddy.ui.theme.*
+import com.manas.medbuddy.ui.theme.CyanPrimary
+import com.manas.medbuddy.ui.theme.DarkBackground
+import com.manas.medbuddy.ui.theme.DarkSurface
+import com.manas.medbuddy.ui.theme.SOSRed
+import com.manas.medbuddy.ui.theme.TextPrimaryDark as TextPrimary
+import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
 import com.manas.medbuddy.util.PhoneNumberValidator
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
