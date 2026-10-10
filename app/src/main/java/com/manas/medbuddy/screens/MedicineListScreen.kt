@@ -56,14 +56,14 @@ fun MedicineListScreen(
     val todayStr = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) }
 
     DisposableEffect(Unit) {
-        val medListener: ValueEventListener = repository.listenToMedicines(
+        val medListener: ValueEventListener? = repository.listenToMedicines(
             onUpdate = { list ->
                 medicines = list
                 loading = false
             },
             onError = { loading = false }
         )
-        val logListener: ValueEventListener = repository.listenToDoseLogs(
+        val logListener: ValueEventListener? = repository.listenToDoseLogs(
             onUpdate = { logs -> doseLogs = logs }
         )
 

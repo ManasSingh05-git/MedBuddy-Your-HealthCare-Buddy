@@ -1,8 +1,11 @@
 package com.manas.medbuddy.data
 
+import android.content.Context
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.manas.medbuddy.model.DoseLog
@@ -11,27 +14,41 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class MedicineRepository {
+class MedicineRepository(private val context: Context? = null) {
 
-    private val database: FirebaseDatabase by lazy {
-        FirebaseDatabase.getInstance().apply {
-            try {
-                setPersistenceEnabled(true)
-            } catch (_: Exception) {
-                // Ignore if persistence was already enabled
+    private val database: FirebaseDatabase? by lazy {
+        try {
+            if (context != null && FirebaseApp.getApps(context).isEmpty()) {
+                FirebaseApp.initializeApp(context)
             }
+            FirebaseDatabase.getInstance().apply {
+                try {
+                    setPersistenceEnabled(true)
+                } catch (_: Exception) {
+                    // Ignore if persistence was already enabled
+                }
+            }
+        } catch (_: Exception) {
+            null
         }
     }
 
     val currentUserId: String
-        get() = FirebaseAuth.getInstance().currentUser?.uid ?: "guest_user"
+        get() = try {
+            FirebaseAuth.getInstance().currentUser?.uid ?: "guest_user"
+        } catch (_: Exception) {
+            "guest_user"
+        }
 
-    fun getMedicinesReference() = database.reference.child("medicines").child(currentUserId)
+    fun getMedicinesReference(): DatabaseReference? = database?.reference?.child("medicines")?.child(currentUserId)
 
-    fun getDoseLogsReference() = database.reference.child("doseLogs").child(currentUserId)
+    fun getDoseLogsReference(): DatabaseReference? = database?.reference?.child("doseLogs")?.child(currentUserId)
 
-    fun listenToMedicines(onUpdate: (List<Medicine>) -> Unit, onError: (String) -> Unit = {}): ValueEventListener {
-        val ref = getMedicinesReference()
+    fun listenToMedicines(onUpdate: (List<Medicine>) -> Unit, onError: (String) -> Unit = {}): ValueEventListener? {
+        val ref = getMedicinesReference() ?: run {
+            onError("Firebase database unavailable")
+            return null
+        }
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val list = snapshot.children.mapNotNull { child ->
@@ -49,12 +66,17 @@ class MedicineRepository {
         return listener
     }
 
-    fun removeMedicinesListener(listener: ValueEventListener) {
-        getMedicinesReference().removeEventListener(listener)
+    fun removeMedicinesListener(listener: ValueEventListener?) {
+        if (listener != null) {
+            getMedicinesReference()?.removeEventListener(listener)
+        }
     }
 
     fun saveMedicine(medicine: Medicine, onComplete: (Boolean, String?) -> Unit) {
-        val ref = getMedicinesReference()
+        val ref = getMedicinesReference() ?: run {
+            onComplete(false, "Firebase database unavailable")
+            return
+        }
         val medId = if (medicine.id.isBlank()) ref.push().key ?: System.currentTimeMillis().toString() else medicine.id
         
         val timeSummary = if (medicine.reminderTimes.isNotEmpty()) {
@@ -71,17 +93,24 @@ class MedicineRepository {
     }
 
     fun deleteMedicine(medicineId: String, onComplete: (Boolean, String?) -> Unit) {
+        val ref = getMedicinesReference() ?: run {
+            onComplete(false, "Firebase database unavailable")
+            return
+        }
         if (medicineId.isBlank()) {
             onComplete(false, "Invalid medicine ID")
             return
         }
-        getMedicinesReference().child(medicineId).removeValue()
+        ref.child(medicineId).removeValue()
             .addOnSuccessListener { onComplete(true, null) }
             .addOnFailureListener { err -> onComplete(false, err.message) }
     }
 
-    fun listenToDoseLogs(onUpdate: (List<DoseLog>) -> Unit, onError: (String) -> Unit = {}): ValueEventListener {
-        val ref = getDoseLogsReference()
+    fun listenToDoseLogs(onUpdate: (List<DoseLog>) -> Unit, onError: (String) -> Unit = {}): ValueEventListener? {
+        val ref = getDoseLogsReference() ?: run {
+            onError("Firebase database unavailable")
+            return null
+        }
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val list = snapshot.children.mapNotNull { child ->
@@ -99,8 +128,10 @@ class MedicineRepository {
         return listener
     }
 
-    fun removeDoseLogsListener(listener: ValueEventListener) {
-        getDoseLogsReference().removeEventListener(listener)
+    fun removeDoseLogsListener(listener: ValueEventListener?) {
+        if (listener != null) {
+            getDoseLogsReference()?.removeEventListener(listener)
+        }
     }
 
     fun logDoseStatus(
@@ -110,7 +141,10 @@ class MedicineRepository {
         dateString: String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
         onComplete: (Boolean, String?) -> Unit = { _, _ -> }
     ) {
-        val ref = getDoseLogsReference()
+        val ref = getDoseLogsReference() ?: run {
+            onComplete(false, "Firebase database unavailable")
+            return
+        }
         val logId = "${medicine.id}_${dateString}_${scheduledTime.replace(" ", "_")}"
         
         val doseLog = DoseLog(

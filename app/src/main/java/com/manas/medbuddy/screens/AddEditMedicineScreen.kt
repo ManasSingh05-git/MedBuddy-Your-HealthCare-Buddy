@@ -68,8 +68,7 @@ fun AddEditMedicineScreen(
     // Fetch existing medicine if editing
     LaunchedEffect(medicineId) {
         if (!medicineId.isNullOrBlank()) {
-            val listener = repository.getMedicinesReference().child(medicineId)
-            listener.get().addOnSuccessListener { snapshot ->
+            repository.getMedicinesReference()?.child(medicineId)?.get()?.addOnSuccessListener { snapshot ->
                 val med = snapshot.getValue(Medicine::class.java)
                 if (med != null) {
                     name = med.name

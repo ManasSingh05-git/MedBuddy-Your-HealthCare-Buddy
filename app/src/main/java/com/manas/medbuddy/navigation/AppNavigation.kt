@@ -9,9 +9,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.manas.medbuddy.screens.AddEditMedicineScreen
 import com.manas.medbuddy.screens.ForgotPasswordScreen
+import com.manas.medbuddy.screens.HealthScreen
 import com.manas.medbuddy.screens.HomeScreen
 import com.manas.medbuddy.screens.LoginScreen
 import com.manas.medbuddy.screens.MedicineListScreen
+import com.manas.medbuddy.screens.MedicineScreen
 import com.manas.medbuddy.screens.SignupScreen
 import com.manas.medbuddy.screens.SplashScreen
 
@@ -23,6 +25,8 @@ object Routes {
     const val Home = "home"
     const val MedicineList = "medicine_list"
     const val AddEditMedicine = "add_edit_medicine"
+    const val Medicines = "medicines"
+    const val Health = "health"
 }
 
 @Composable
@@ -58,6 +62,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onEditMedicine = { medicineId ->
                     navController.navigate("${Routes.AddEditMedicine}?medicineId=$medicineId")
                 },
+                onNavigateToMedicines = { navController.navigate(Routes.MedicineList) },
+                onNavigateToHealth = { navController.navigate(Routes.Health) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) { inclusive = true }
@@ -89,6 +95,18 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 medicineId = medicineId,
                 onBack = { navController.popBackStack() }
             )
+        }
+        composable(Routes.Medicines) {
+            MedicineListScreen(
+                onBack = { navController.popBackStack() },
+                onAddMedicine = { navController.navigate(Routes.AddEditMedicine) },
+                onEditMedicine = { medicineId ->
+                    navController.navigate("${Routes.AddEditMedicine}?medicineId=$medicineId")
+                }
+            )
+        }
+        composable(Routes.Health) {
+            HealthScreen(onBack = { navController.popBackStack() })
         }
     }
 }

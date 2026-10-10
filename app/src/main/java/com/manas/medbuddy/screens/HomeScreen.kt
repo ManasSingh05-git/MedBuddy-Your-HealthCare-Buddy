@@ -8,12 +8,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
@@ -27,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ValueEventListener
 import com.manas.medbuddy.data.MedicineRepository
@@ -36,194 +43,252 @@ import com.manas.medbuddy.reminder.ReminderScheduler
 import com.manas.medbuddy.ui.components.AnimatedProgressRing
 import com.manas.medbuddy.ui.components.GlassCard
 import com.manas.medbuddy.ui.theme.*
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onAddMedicine: () -> Unit,
-    onOpenMedicineList: () -> Unit,
-    onEditMedicine: (String) -> Unit,
-    onLogout: () -> Unit,
-    repository: MedicineRepository = remember { MedicineRepository() }
+    onAddMedicine: () -> Unit = {},
+    onOpenMedicineList: () -> Unit = {},
+    onEditMedicine: (String) -> Unit = {},
+    onNavigateToMedicines: () -> Unit = {},
+    onNavigateToHealth: () -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val scheduler = remember { ReminderScheduler(context) }
+    val repository = remember { MedicineRepository(context) }
 
     var medicines by remember { mutableStateOf<List<Medicine>>(emptyList()) }
     var doseLogs by remember { mutableStateOf<List<DoseLog>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
 
+    val themeMode = LocalThemeMode.current
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val coroutineScope = rememberCoroutineScope()
+
+    val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    val greeting = when (currentHour) {
+        in 0..11 -> "Good morning"
+        in 12..16 -> "Good afternoon"
+        else -> "Good evening"
+    }
+
     val todayStr = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) }
 
     DisposableEffect(Unit) {
-        val medListener: ValueEventListener = repository.listenToMedicines(
-            onUpdate = { list ->
-                medicines = list
-                loading = false
-            },
-            onError = { loading = false }
-        )
-        val logListener: ValueEventListener = repository.listenToDoseLogs(
-            onUpdate = { logs -> doseLogs = logs }
-        )
+        val medListener: ValueEventListener? = try {
+            repository.listenToMedicines(
+                onUpdate = { list ->
+                    medicines = list
+                    loading = false
+                },
+                onError = { loading = false }
+            )
+        } catch (_: Exception) {
+            loading = false
+            null
+        }
+
+        val logListener: ValueEventListener? = try {
+            repository.listenToDoseLogs(
+                onUpdate = { logs -> doseLogs = logs }
+            )
+        } catch (_: Exception) {
+            null
+        }
 
         onDispose {
-            repository.removeMedicinesListener(medListener)
-            repository.removeDoseLogsListener(logListener)
+            if (medListener != null) repository.removeMedicinesListener(medListener)
+            if (logListener != null) repository.removeDoseLogsListener(logListener)
         }
     }
 
-    Scaffold(
-        containerColor = DarkBackground,
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { /* SOS Action preserved */ },
-                containerColor = SOSRed,
-                contentColor = Color.White,
-                shape = CircleShape,
-                modifier = Modifier.padding(bottom = 16.dp)
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(
+                drawerContainerColor = DarkSurface
             ) {
-                Icon(Icons.Default.Warning, contentDescription = "SOS", modifier = Modifier.size(28.dp))
-            }
-        },
-        floatingActionButtonPosition = FabPosition.Center,
-        bottomBar = {
-            NavigationBar(
-                containerColor = DarkSurface.copy(alpha = 0.9f),
-                contentColor = CyanPrimary,
-                tonalElevation = 8.dp
-            ) {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home") },
-                    selected = true,
-                    onClick = { },
-                    colors = NavigationBarItemDefaults.colors(selectedIconColor = CyanPrimary, unselectedIconColor = TextSecondary, indicatorColor = DarkSurface)
+                Spacer(Modifier.height(32.dp))
+                Text(
+                    "MedBuddy Health Dashboard",
+                    modifier = Modifier.padding(16.dp),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
                 )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                    label = { Text("Profile") },
+                HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp), color = GlassBorder)
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.AccountCircle, contentDescription = "Profile", tint = CyanPrimary) },
+                    label = { Text("Profile & Details", color = TextPrimary) },
                     selected = false,
-                    onClick = { },
-                    colors = NavigationBarItemDefaults.colors(selectedIconColor = CyanPrimary, unselectedIconColor = TextSecondary)
+                    onClick = { coroutineScope.launch { drawerState.close() } }
                 )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("Settings") },
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.MedicalServices, contentDescription = "Medicines", tint = CyanPrimary) },
+                    label = { Text("Medicine Management", color = TextPrimary) },
                     selected = false,
-                    onClick = { },
-                    colors = NavigationBarItemDefaults.colors(selectedIconColor = CyanPrimary, unselectedIconColor = TextSecondary)
+                    onClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        onOpenMedicineList()
+                    }
                 )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings", tint = CyanPrimary) },
+                    label = { Text("App Settings", color = TextPrimary) },
+                    selected = false,
+                    onClick = { coroutineScope.launch { drawerState.close() } }
+                )
+                Spacer(Modifier.weight(1f))
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout", tint = SOSRed) },
+                    label = { Text("Log out", color = SOSRed) },
+                    selected = false,
+                    onClick = {
+                        try { FirebaseAuth.getInstance().signOut() } catch (_: Exception) {}
+                        onLogout()
+                    }
+                )
+                Spacer(Modifier.height(32.dp))
             }
         }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            // Header
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Good morning,", color = TextSecondary, fontSize = 16.sp)
-                    Text("Your Health Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                }
-                TextButton(onClick = { FirebaseAuth.getInstance().signOut(); onLogout() }) { 
-                    Text("Log out", color = SOSRed) 
-                }
-            }
-
-            // Health Score Ring
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                AnimatedProgressRing(
-                    progress = 0.85f,
-                    modifier = Modifier.size(160.dp),
-                    colors = listOf(CyanPrimary, VioletGradient),
-                    strokeWidth = 24f
+    ) {
+        Scaffold(
+            containerColor = DarkBackground,
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text("$greeting, MedBuddy", fontWeight = FontWeight.SemiBold, fontSize = 20.sp, color = TextPrimary) },
+                    navigationIcon = {
+                        IconButton(onClick = { coroutineScope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = CyanPrimary)
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = {
+                            themeMode.value = if (themeMode.value == ThemeMode.LIGHT) ThemeMode.DARK else ThemeMode.LIGHT
+                        }) {
+                            Icon(
+                                imageVector = if (themeMode.value == ThemeMode.LIGHT) Icons.Default.DarkMode else Icons.Default.LightMode,
+                                contentDescription = "Toggle Theme",
+                                tint = CyanPrimary
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkSurface.copy(alpha = 0.9f))
                 )
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("85", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                    Text("Health Score", fontSize = 14.sp, color = TextSecondary)
+            },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { /* SOS Action preserved */ },
+                    containerColor = SOSRed,
+                    contentColor = Color.White,
+                    shape = CircleShape,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    Icon(Icons.Default.Warning, contentDescription = "SOS", modifier = Modifier.size(28.dp))
                 }
-            }
-
-            // Metrics Grid
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
-                    MetricCard("Steps", "8,432", "Goal: 10k", Modifier.weight(1f))
-                    MetricCard("Distance", "5.2 km", "Daily", Modifier.weight(1f))
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
-                    MetricCard("Calories", "420 kcal", "Active", Modifier.weight(1f))
-                    MetricCard("Water", "1.5 L", "Goal: 2.5 L", Modifier.weight(1f))
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
-                    MetricCard("Sleep", "7h 20m", "Restful", Modifier.weight(1f))
-                    MetricCard("Medicines", if (loading) "-" else "${medicines.size} active", "Today", Modifier.weight(1f))
-                }
-            }
-
-            // Next Reminder
-            GlassCard(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Your next reminder", color = CyanPrimary, fontWeight = FontWeight.Medium)
-                    val nextMed = medicines.firstOrNull()
-                    if (nextMed != null) {
-                        val displayTime = if (nextMed.reminderTimes.isNotEmpty()) {
-                            nextMed.reminderTimes.first().time
-                        } else nextMed.time.ifBlank { "08:00 AM" }
-                        Text(nextMed.name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                        Text("${nextMed.dosage} at $displayTime", color = TextSecondary)
-                    } else {
-                        Text(if (loading) "Loading..." else "No medicine added", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                        Text(if (loading) "Please wait" else "Add your first medicine below", color = TextSecondary)
+            },
+            floatingActionButtonPosition = FabPosition.Center
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                // Health Score Ring
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    AnimatedProgressRing(
+                        progress = 0.85f,
+                        modifier = Modifier.size(160.dp),
+                        colors = listOf(CyanPrimary, VioletGradient),
+                        strokeWidth = 24f
+                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("85", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                        Text("Health Score", fontSize = 14.sp, color = TextSecondary)
                     }
                 }
-            }
 
-            // Actions
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Quick actions", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                TextButton(onClick = onOpenMedicineList) {
-                    Text("View All (${medicines.size})", color = CyanPrimary)
+                // Metrics Grid
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
+                        MetricCard("Steps", "8,432", "Goal: 10k", Modifier.weight(1f))
+                        MetricCard("Distance", "5.2 km", "Daily", Modifier.weight(1f))
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
+                        MetricCard("Calories", "420 kcal", "Active", Modifier.weight(1f))
+                        MetricCard("Water", "1.5 L", "Goal: 2.5 L", Modifier.weight(1f))
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
+                        MetricCard("Sleep", "7h 20m", "Restful", Modifier.weight(1f))
+                        MetricCard("Medicines", if (loading) "-" else "${medicines.size} active", "Today", Modifier.weight(1f))
+                    }
                 }
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
-                ActionCard("Schedules & History", Modifier.weight(1f), onClick = onOpenMedicineList)
-            }
 
-            // Medicines List
-            Text("My medicines", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-            when {
-                loading -> Text("Loading medicines...", color = TextSecondary)
-                medicines.isEmpty() -> Text("No medicines yet. Tap Add Medicine to begin.", color = TextSecondary)
-                else -> medicines.forEach { medicine ->
-                    MedicineCard(
-                        medicine = medicine,
-                        doseLogs = doseLogs,
-                        todayStr = todayStr,
-                        onEdit = { onEditMedicine(medicine.id) },
-                        onDelete = {
-                            scheduler.cancelMedicineReminders(medicine)
-                            repository.deleteMedicine(medicine.id) { _, _ -> }
-                        },
-                        onLogStatus = { time, status ->
-                            repository.logDoseStatus(medicine, time, status, todayStr)
+                // Next Reminder
+                GlassCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Your next reminder", color = CyanPrimary, fontWeight = FontWeight.Medium)
+                        val nextMed = medicines.firstOrNull()
+                        if (nextMed != null) {
+                            val displayTime = if (nextMed.reminderTimes.isNotEmpty()) {
+                                nextMed.reminderTimes.first().time
+                            } else nextMed.time.ifBlank { "08:00 AM" }
+                            Text(nextMed.name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                            Text("${nextMed.dosage} at $displayTime", color = TextSecondary)
+                        } else {
+                            Text(if (loading) "Loading..." else "No medicine added", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                            Text(if (loading) "Please wait" else "Add your first medicine below", color = TextSecondary)
                         }
-                    )
+                    }
                 }
+
+                // Actions
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Quick actions", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                    TextButton(onClick = onOpenMedicineList) {
+                        Text("View All (${medicines.size})", color = CyanPrimary)
+                    }
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
+                    ActionCard("Schedules & History", Modifier.weight(1f), onClick = onOpenMedicineList)
+                }
+
+                // Medicines List
+                Text("My medicines", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                when {
+                    loading -> Text("Loading medicines...", color = TextSecondary)
+                    medicines.isEmpty() -> Text("No medicines yet. Tap Add Medicine to begin.", color = TextSecondary)
+                    else -> medicines.forEach { medicine ->
+                        MedicineCard(
+                            medicine = medicine,
+                            doseLogs = doseLogs,
+                            todayStr = todayStr,
+                            onEdit = { onEditMedicine(medicine.id) },
+                            onDelete = {
+                                scheduler.cancelMedicineReminders(medicine)
+                                repository.deleteMedicine(medicine.id) { _, _ -> }
+                            },
+                            onLogStatus = { time, status ->
+                                repository.logDoseStatus(medicine, time, status, todayStr)
+                            }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(40.dp)) // Space for FAB
             }
-            
-            Spacer(modifier = Modifier.height(40.dp)) // Space for FAB
         }
     }
 }

@@ -26,6 +26,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import androidx.compose.material3.Surface
+
 @Composable
 fun SignupScreen(onSignup: () -> Unit, onLogin: () -> Unit) {
     var name by remember { mutableStateOf("") }
@@ -33,15 +35,19 @@ fun SignupScreen(onSignup: () -> Unit, onLogin: () -> Unit) {
     var password by remember { mutableStateOf("") }
     var showError by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .imePadding()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 40.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
-        Text("Create your account", fontSize = 30.sp, fontWeight = FontWeight.Bold)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 40.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text("Create your account", fontSize = 30.sp, fontWeight = FontWeight.Bold)
         Text("Start your simpler health journey today.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         OutlinedTextField(value = name, onValueChange = { name = it; showError = false }, modifier = Modifier.fillMaxWidth(), singleLine = true, label = { Text("Full name") }, isError = showError && name.isBlank())
         OutlinedTextField(value = email, onValueChange = { email = it; showError = false }, modifier = Modifier.fillMaxWidth(), singleLine = true, label = { Text("Email address") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), isError = showError && email.isBlank())
@@ -53,4 +59,5 @@ fun SignupScreen(onSignup: () -> Unit, onLogin: () -> Unit) {
         ) { Text("Create account", modifier = Modifier.padding(vertical = 6.dp)) }
         TextButton(onClick = onLogin, modifier = Modifier.fillMaxWidth()) { Text("Already have an account? Sign in") }
     }
+}
 }
