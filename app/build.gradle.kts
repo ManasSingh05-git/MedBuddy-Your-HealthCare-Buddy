@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.manas.medbuddy"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.manas.medbuddy"
         minSdk = 24
-        targetSdk = 37
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
     }
@@ -44,5 +44,6 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")
 
+    testImplementation("junit:junit:4.13.2")
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
