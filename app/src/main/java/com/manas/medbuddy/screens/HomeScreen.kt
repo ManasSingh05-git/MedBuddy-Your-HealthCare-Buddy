@@ -12,20 +12,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -41,16 +38,16 @@ import com.manas.medbuddy.data.model.HospitalSearchResult
 import com.manas.medbuddy.data.repository.EmergencyContactRepository
 import com.manas.medbuddy.data.repository.HospitalRepository
 import com.manas.medbuddy.model.Medicine
+import com.manas.medbuddy.ui.components.AnimatedProgressRing
 import com.manas.medbuddy.ui.components.GlassCard
 import com.manas.medbuddy.ui.theme.*
+import com.manas.medbuddy.util.EmergencyCallHelper
+import com.manas.medbuddy.util.SosTapDetector
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onNavigateToMedicines: () -> Unit,
-    onNavigateToHealth: () -> Unit,
+    onAddMedicine: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToSosSettings: () -> Unit,
     onNavigateToHospitalFinder: () -> Unit,
@@ -74,17 +71,77 @@ fun HomeScreen(
     var medicines by remember { mutableStateOf<List<Medicine>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
 
-    val themeMode = LocalThemeMode.current
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    
-    // User name greeting
-    val userName = "User"
-    val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-    val greeting = when (currentHour) {
-        in 0..11 -> "Good morning"
-        in 12..16 -> "Good afternoon"
-        else -> "Good evening"
+    // Dialog states for SOS actions
+    var showSingleTapDialog by remember { mutableStateOf(false) }
+    var showNoContactDialog by remember { mutableStateOf(false) }
+    var showSearchingHospitalDialog by remember { mutableStateOf(false) }
+    var hospitalSearchResult by remember { mutableStateOf<HospitalSearchResult?>(null) }
+
+    fun executeHospitalSearch() {
+        showSearchingHospitalDialog = true
+        hospitalSearchResult = null
+        coroutineScope.launch {
+            val result = hospitalRepo.findNearestHospital()
+            showSearchingHospitalDialog = false
+            hospitalSearchResult = result
+        }
     }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fineGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+        val coarseGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+        if (fineGranted || coarseGranted) {
+            executeHospitalSearch()
+        } else {
+            hospitalSearchResult = HospitalSearchResult.PermissionDenied
+        }
+    }
+
+    val onSingleTap: () -> Unit = {
+        val primary = contactRepo.getPrimaryContact()
+        if (primary != null) {
+            showSingleTapDialog = true
+        } else {
+            showNoContactDialog = true
+        }
+    }
+
+    val onTripleTap: () -> Unit = {
+        val hasFine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val hasCoarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+        if (hasFine || hasCoarse) {
+            executeHospitalSearch()
+        } else {
+            locationPermissionLauncher.launch(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+            )
+        }
+    }
+
+    val sosTapDetector = remember(coroutineScope) {
+        SosTapDetector(
+            scope = coroutineScope,
+            timeWindowMs = 1200L,
+            singleTapDelayMs = 350L,
+            onSingleTap = onSingleTap,
+            onTripleTap = onTripleTap
+        )
+    }
+
+    // Gentle pulse animation for SOS button
+    val infiniteTransition = rememberInfiniteTransition(label = "sosPulse")
+    val sosPulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "sosScale"
+    )
 
     DisposableEffect(userId) {
         if (userId == null) {
@@ -95,37 +152,33 @@ fun HomeScreen(
                 val reference = FirebaseDatabase.getInstance().reference.child("medicines").child(userId)
                 val listener = object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-<<<<<<< HEAD
-                        medicines = snapshot.children.mapNotNull { child -> child.getValue(Medicine::class.java)?.copy(id = child.key ?: "") }
-=======
                         medicines = snapshot.children.mapNotNull { child: DataSnapshot -> child.getValue(Medicine::class.java)?.copy(id = child.key ?: "") }
->>>>>>> origin/feat/sleep-tracking
                         loading = false
                     }
                     override fun onCancelled(error: DatabaseError) { loading = false }
                 }
                 reference.addValueEventListener(listener)
                 onDispose { reference.removeEventListener(listener) }
-<<<<<<< HEAD
-            } catch (e: Exception) {
-=======
             } catch (_: Exception) {
->>>>>>> origin/feat/sleep-tracking
                 loading = false
                 onDispose { }
             }
         }
     }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet(
-                drawerContainerColor = MaterialTheme.colorScheme.surface,
+    Scaffold(
+        containerColor = DarkBackground,
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { sosTapDetector.registerTap() },
+                containerColor = SOSRed,
+                contentColor = Color.White,
+                shape = CircleShape,
+                modifier = Modifier
+                    .padding(bottom = 12.dp)
+                    .scale(sosPulseScale),
+                elevation = FloatingActionButtonDefaults.elevation(8.dp)
             ) {
-<<<<<<< HEAD
-                Spacer(Modifier.height(32.dp))
-=======
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -319,49 +372,14 @@ fun HomeScreen(
             containerColor = DarkSurface,
             title = { Text("No Primary Contact Set", color = TextPrimary, fontWeight = FontWeight.Bold) },
             text = {
->>>>>>> origin/feat/sleep-tracking
                 Text(
-                    "Hello, $userName",
-                    modifier = Modifier.padding(16.dp),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    "You haven't added a primary emergency contact yet. Please configure your emergency contacts in settings.",
+                    color = TextSecondary
                 )
-                HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.AccountCircle, contentDescription = "Profile") },
-                    label = { Text("Profile & Details") },
-                    selected = false,
-                    onClick = { /* TODO Edit profile */ }
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("App Settings") },
-                    selected = false,
-                    onClick = onNavigateToSettings
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Warning, contentDescription = "SOS Settings") },
-                    label = { Text("SOS Settings") },
-                    selected = false,
-                    onClick = onNavigateToSosSettings
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Info, contentDescription = "About") },
-                    label = { Text("About MedBuddy") },
-                    selected = false,
-                    onClick = { /* TODO Info */ }
-                )
-                Spacer(Modifier.weight(1f))
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout", tint = MaterialTheme.colorScheme.error) },
-                    label = { Text("Log out", color = MaterialTheme.colorScheme.error) },
-                    selected = false,
+            },
+            confirmButton = {
+                Button(
                     onClick = {
-<<<<<<< HEAD
-                        try { FirebaseAuth.getInstance().signOut() } catch (e: Exception) {}
-                        onLogout()
-=======
                         showNoContactDialog = false
                         onNavigateToSosSettings()
                     },
@@ -548,111 +566,49 @@ fun HomeScreen(
                         ) {
                             Text("OK")
                         }
->>>>>>> origin/feat/sleep-tracking
                     }
                 )
-                Spacer(Modifier.height(32.dp))
             }
         }
+    }
+}
+
+@Composable
+private fun MetricCard(title: String, value: String, subtitle: String, modifier: Modifier) {
+    GlassCard(modifier = modifier) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(title, color = TextSecondary, fontSize = 14.sp)
+            Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Text(subtitle, color = CyanPrimary, fontSize = 12.sp)
+        }
+    }
+}
+
+@Composable
+private fun ActionCard(title: String, modifier: Modifier, onClick: () -> Unit) {
+    Surface(
+        modifier = modifier,
+        onClick = onClick,
+        color = Color.Transparent,
+        shape = RoundedCornerShape(16.dp)
     ) {
-        Scaffold(
-            containerColor = MaterialTheme.colorScheme.background,
-            topBar = {
-                CenterAlignedTopAppBar(
-                    title = { Text("$greeting, $userName", fontWeight = FontWeight.SemiBold, fontSize = 20.sp) },
-                    navigationIcon = {
-                        IconButton(onClick = { coroutineScope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = {
-                            themeMode.value = if (themeMode.value == ThemeMode.LIGHT) ThemeMode.DARK else ThemeMode.LIGHT
-                        }) {
-                            Icon(
-                                imageVector = if (themeMode.value == ThemeMode.LIGHT) Icons.Default.DarkMode else Icons.Default.LightMode,
-                                contentDescription = "Toggle Theme",
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                        actionIconContentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                )
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { /* TODO SOS Action */ },
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = Color.White,
-                    shape = CircleShape,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                ) {
-                    Icon(Icons.Default.Warning, contentDescription = "SOS", modifier = Modifier.size(28.dp))
-                }
-            },
-            floatingActionButtonPosition = FabPosition.Center
-        ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                Spacer(modifier = Modifier.height(8.dp))
+        Box(
+            modifier = Modifier
+                .background(Brush.linearGradient(listOf(BlueGradient.copy(alpha=0.2f), VioletGradient.copy(alpha=0.2f))))
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(title, fontWeight = FontWeight.Medium, color = TextPrimary)
+        }
+    }
+}
 
-                // Medicines Section (Clickable)
-                Surface(
-                    onClick = onNavigateToMedicines,
-                    color = Color.Transparent,
-                    shape = RoundedCornerShape(20.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    GlassCard(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                Text("Your Medicines", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
-                                Text("View All >", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-                            }
-                            
-                            val nextMed = medicines.firstOrNull()
-                            if (nextMed != null) {
-                                Text("Next up: ${nextMed.name}", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                                Text("${nextMed.dosage} at ${nextMed.time}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            } else {
-                                Text(if (loading) "Loading..." else "No medicine scheduled", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                                Text(if (loading) "Please wait" else "Tap here to add medicines", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        }
-                    }
-                }
-
-                // Health Section (Clickable)
-                Surface(
-                    onClick = onNavigateToHealth,
-                    color = Color.Transparent,
-                    shape = RoundedCornerShape(20.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    GlassCard(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                Text("Health Overview", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
-                                Text("View All >", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-                            }
-                            Text("See your steps, water intake, sleep, and heart rate.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
-                        }
-                    }
-                }
-            
-                Spacer(modifier = Modifier.height(40.dp)) // Space for FAB
-            }
+@Composable
+private fun MedicineCard(medicine: Medicine) {
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(medicine.name, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = TextPrimary)
+            Text("${medicine.dosage} - ${medicine.time}", color = TextSecondary)
         }
     }
 }
