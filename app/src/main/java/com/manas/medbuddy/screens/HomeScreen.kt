@@ -48,7 +48,13 @@ import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onNavigateToMedicines: () -> Unit, onNavigateToHealth: () -> Unit, onLogout: () -> Unit) {
+fun HomeScreen(
+    onNavigateToMedicines: () -> Unit,
+    onNavigateToHealth: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToSosSettings: () -> Unit,
+    onLogout: () -> Unit
+) {
     val userId = try {
         FirebaseAuth.getInstance().currentUser?.uid
     } catch (e: Exception) {
@@ -119,7 +125,13 @@ fun HomeScreen(onNavigateToMedicines: () -> Unit, onNavigateToHealth: () -> Unit
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
                     label = { Text("App Settings") },
                     selected = false,
-                    onClick = { /* TODO Settings */ }
+                    onClick = onNavigateToSettings
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Warning, contentDescription = "SOS Settings") },
+                    label = { Text("SOS Settings") },
+                    selected = false,
+                    onClick = onNavigateToSosSettings
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Info, contentDescription = "About") },
