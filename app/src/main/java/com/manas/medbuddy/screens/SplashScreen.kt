@@ -27,11 +27,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
 import com.manas.medbuddy.ui.components.GradientPillButton
 import com.manas.medbuddy.ui.components.HeartPillLogo
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
-fun SplashScreen(onFinished: () -> Unit) {
+fun SplashScreen(
+    onFinished: () -> Unit,
+    onAlreadyAuthenticated: () -> Unit = onFinished
+) {
+    LaunchedEffect(Unit) {
+        val currentUser = try {
+            FirebaseAuth.getInstance().currentUser
+        } catch (_: Exception) {
+            null
+        }
+        if (currentUser != null) {
+            onAlreadyAuthenticated()
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()

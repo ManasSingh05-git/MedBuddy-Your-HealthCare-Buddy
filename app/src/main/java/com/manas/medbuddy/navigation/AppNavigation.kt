@@ -54,6 +54,9 @@ fun AppNavigation(
                         }
                         launchSingleTop = true
                     }
+                },
+                onAlreadyAuthenticated = {
+                    navController.navigateToHome()
                 }
             )
         }

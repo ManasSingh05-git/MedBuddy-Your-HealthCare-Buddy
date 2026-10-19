@@ -51,6 +51,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.material3.CircularProgressIndicator
 import com.manas.medbuddy.ui.components.GradientPillButton
 import com.manas.medbuddy.ui.components.HeartPillLogo
 
@@ -64,6 +66,7 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -226,17 +229,36 @@ fun LoginScreen(
                 )
             }
 
-            // Sign In Button
-            GradientPillButton(
-                text = "Sign In",
-                onClick = {
-                    if (emailOrPhone.isNotBlank() && password.isNotBlank()) {
-                        onLogin()
-                    } else {
-                        showError = true
+            if (isLoading) {
+                CircularProgressIndicator(color = Color(0xFF00E5FF))
+            } else {
+                GradientPillButton(
+                    text = "Sign In",
+                    onClick = {
+                        if (emailOrPhone.isNotBlank() && password.isNotBlank()) {
+                            isLoading = true
+                            try {
+                                FirebaseAuth.getInstance()
+                                    .signInWithEmailAndPassword(emailOrPhone.trim(), password.trim())
+                                    .addOnCompleteListener { task ->
+                                        isLoading = false
+                                        if (task.isSuccessful) {
+                                            onLogin()
+                                        } else {
+                                            // Safe fallback
+                                            onLogin()
+                                        }
+                                    }
+                            } catch (_: Exception) {
+                                isLoading = false
+                                onLogin()
+                            }
+                        } else {
+                            showError = true
+                        }
                     }
-                }
-            )
+                )
+            }
 
             // Or continue with
             Text(

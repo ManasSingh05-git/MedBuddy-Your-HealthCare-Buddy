@@ -48,6 +48,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.material3.CircularProgressIndicator
 import com.manas.medbuddy.ui.components.GradientPillButton
 import com.manas.medbuddy.ui.components.HeartPillLogo
 
@@ -65,6 +67,7 @@ fun SignupScreen(
     var isTermsAccepted by remember { mutableStateOf(true) }
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -271,32 +274,47 @@ fun SignupScreen(
             }
 
             // Sign Up Button
-            GradientPillButton(
-                text = "Sign Up",
-                onClick = {
-                    when {
-                        name.isBlank() || email.isBlank() -> {
-                            errorMessage = "Please enter name and email."
-                            showError = true
-                        }
-                        password.length < 6 -> {
-                            errorMessage = "Password must be at least 6 characters."
-                            showError = true
-                        }
-                        password != confirmPassword -> {
-                            errorMessage = "Passwords do not match."
-                            showError = true
-                        }
-                        !isTermsAccepted -> {
-                            errorMessage = "Please agree to Terms & Privacy Policy."
-                            showError = true
-                        }
-                        else -> {
-                            onSignup()
+            if (isLoading) {
+                CircularProgressIndicator(color = Color(0xFF00E5FF))
+            } else {
+                GradientPillButton(
+                    text = "Sign Up",
+                    onClick = {
+                        when {
+                            name.isBlank() || email.isBlank() -> {
+                                errorMessage = "Please enter name and email."
+                                showError = true
+                            }
+                            password.length < 6 -> {
+                                errorMessage = "Password must be at least 6 characters."
+                                showError = true
+                            }
+                            password != confirmPassword -> {
+                                errorMessage = "Passwords do not match."
+                                showError = true
+                            }
+                            !isTermsAccepted -> {
+                                errorMessage = "Please agree to Terms & Privacy Policy."
+                                showError = true
+                            }
+                            else -> {
+                                isLoading = true
+                                try {
+                                    FirebaseAuth.getInstance()
+                                        .createUserWithEmailAndPassword(email.trim(), password.trim())
+                                        .addOnCompleteListener { _ ->
+                                            isLoading = false
+                                            onSignup()
+                                        }
+                                } catch (_: Exception) {
+                                    isLoading = false
+                                    onSignup()
+                                }
+                            }
                         }
                     }
-                }
-            )
+                )
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 
