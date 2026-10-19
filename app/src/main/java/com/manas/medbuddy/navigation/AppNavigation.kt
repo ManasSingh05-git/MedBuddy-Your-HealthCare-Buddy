@@ -8,10 +8,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
 import com.manas.medbuddy.screens.ForgotPasswordScreen
+import com.manas.medbuddy.screens.HealthMapScreen
 import com.manas.medbuddy.screens.HomeScreen
+import com.manas.medbuddy.screens.HospitalFinderScreen
 import com.manas.medbuddy.screens.LoginScreen
 import com.manas.medbuddy.screens.SettingsScreen
 import com.manas.medbuddy.screens.SignupScreen
+import com.manas.medbuddy.screens.SleepTrackerScreen
 import com.manas.medbuddy.screens.SosSettingsScreen
 import com.manas.medbuddy.screens.SplashScreen
 import com.manas.medbuddy.screens.MedicineScreen
@@ -27,6 +30,9 @@ object Routes {
     const val Health = "health"
     const val Settings = "settings"
     const val SosSettings = "sos_settings"
+    const val HospitalFinder = "hospital_finder"
+    const val HealthMap = "health_map"
+    const val SleepTracker = "sleep_tracker"
 }
 
 @Composable
@@ -103,6 +109,9 @@ fun AppNavigation(
                 onNavigateToSosSettings = {
                     navController.navigate(Routes.SosSettings)
                 },
+                onNavigateToHospitalFinder = { navController.navigate(Routes.HospitalFinder) },
+                onNavigateToHealthMap = { navController.navigate(Routes.HealthMap) },
+                onNavigateToSleepTracker = { navController.navigate(Routes.SleepTracker) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -158,6 +167,21 @@ fun AppNavigation(
                 onBack = {
                     navController.popBackStack()
                 }
+            )
+        }
+        composable(Routes.HospitalFinder) {
+            HospitalFinderScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.HealthMap) {
+            HealthMapScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.SleepTracker) {
+            SleepTrackerScreen(
+                onBack = { navController.popBackStack() }
             )
         }
     }

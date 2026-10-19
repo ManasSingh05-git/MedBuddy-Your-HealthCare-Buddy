@@ -5,7 +5,11 @@ import java.util.Locale
 data class Hospital(
     val id: String,
     val name: String,
-    val phoneNumber: String,
+    val phoneNumber: String = "",
+    val address: String = "",
+    val rating: Double? = null,
+    val userRatingsTotal: Int? = null,
+    val isOpenNow: Boolean? = null,
     val latitude: Double,
     val longitude: Double,
     val distanceInMeters: Float
