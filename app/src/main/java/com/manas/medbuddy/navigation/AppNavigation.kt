@@ -15,6 +15,7 @@ import com.manas.medbuddy.screens.HospitalFinderScreen
 import com.manas.medbuddy.screens.LoginScreen
 import com.manas.medbuddy.screens.MedicineReminderScreen
 import com.manas.medbuddy.screens.MedicineScreen
+import com.manas.medbuddy.screens.ProfileScreen
 import com.manas.medbuddy.screens.SettingsScreen
 import com.manas.medbuddy.screens.SignupScreen
 import com.manas.medbuddy.screens.SleepTrackerScreen
@@ -32,6 +33,7 @@ object Routes {
     const val AddMedicine = "add_medicine"
     const val MedicineReminder = "medicine_reminder"
     const val Health = "health"
+    const val Profile = "profile"
     const val Settings = "settings"
     const val SosSettings = "sos_settings"
     const val HospitalFinder = "hospital_finder"
@@ -113,7 +115,7 @@ fun AppNavigation(
                     navController.navigate(Routes.Health)
                 },
                 onNavigateToSettings = {
-                    navController.navigate(Routes.Settings)
+                    navController.navigate(Routes.Profile)
                 },
                 onNavigateToSosSettings = {
                     navController.navigate(Routes.SosSettings)
@@ -180,6 +182,29 @@ fun AppNavigation(
             )
         }
 
+        // Profile Screen
+        composable(Routes.Profile) {
+            ProfileScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToSosSettings = {
+                    navController.navigate(Routes.SosSettings)
+                },
+                onNavigateToSettings = {
+                    navController.navigate(Routes.Settings)
+                },
+                onLogout = {
+                    navController.navigate(Routes.Login) {
+                        popUpTo(Routes.Home) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
         // Settings Screen
         composable(Routes.Settings) {
             SettingsScreen(
@@ -211,12 +236,6 @@ fun AppNavigation(
 
         composable(Routes.HospitalFinder) {
             HospitalFinderScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Routes.HospitalDetails) {
-            HospitalDetailsScreen(
                 onBack = { navController.popBackStack() }
             )
         }
