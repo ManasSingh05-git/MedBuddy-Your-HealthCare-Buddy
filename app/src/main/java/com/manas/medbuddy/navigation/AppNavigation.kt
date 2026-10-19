@@ -1,4 +1,3 @@
-
 package com.manas.medbuddy.navigation
 
 import androidx.compose.runtime.Composable
@@ -6,19 +5,20 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-
+import com.manas.medbuddy.screens.AddMedicineScreen
 import com.manas.medbuddy.screens.ForgotPasswordScreen
 import com.manas.medbuddy.screens.HealthMapScreen
+import com.manas.medbuddy.screens.HealthScreen
 import com.manas.medbuddy.screens.HomeScreen
 import com.manas.medbuddy.screens.HospitalFinderScreen
 import com.manas.medbuddy.screens.LoginScreen
+import com.manas.medbuddy.screens.MedicineReminderScreen
+import com.manas.medbuddy.screens.MedicineScreen
 import com.manas.medbuddy.screens.SettingsScreen
 import com.manas.medbuddy.screens.SignupScreen
 import com.manas.medbuddy.screens.SleepTrackerScreen
 import com.manas.medbuddy.screens.SosSettingsScreen
 import com.manas.medbuddy.screens.SplashScreen
-import com.manas.medbuddy.screens.MedicineScreen
-import com.manas.medbuddy.screens.HealthScreen
 
 object Routes {
     const val Splash = "splash"
@@ -27,6 +27,8 @@ object Routes {
     const val ForgotPassword = "forgot_password"
     const val Home = "home"
     const val Medicines = "medicines"
+    const val AddMedicine = "add_medicine"
+    const val MedicineReminder = "medicine_reminder"
     const val Health = "health"
     const val Settings = "settings"
     const val SosSettings = "sos_settings"
@@ -131,6 +133,36 @@ fun AppNavigation(
             MedicineScreen(
                 onBack = {
                     navController.popBackStack()
+                },
+                onNavigateToAddMedicine = {
+                    navController.navigate(Routes.AddMedicine)
+                }
+            )
+        }
+
+        // Add Medicine Screen
+        composable(Routes.AddMedicine) {
+            AddMedicineScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+                onMedicineSaved = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // Medicine Reminder Experience
+        composable(Routes.MedicineReminder) {
+            MedicineReminderScreen(
+                onClose = {
+                    navController.popBackStack()
+                },
+                onMarkTaken = {
+                    navController.popBackStack()
+                },
+                onSnooze = {
+                    navController.popBackStack()
                 }
             )
         }
@@ -172,16 +204,19 @@ fun AppNavigation(
                 }
             )
         }
+
         composable(Routes.HospitalFinder) {
             HospitalFinderScreen(
                 onBack = { navController.popBackStack() }
             )
         }
+
         composable(Routes.HealthMap) {
             HealthMapScreen(
                 onBack = { navController.popBackStack() }
             )
         }
+
         composable(Routes.SleepTracker) {
             SleepTrackerScreen(
                 onBack = { navController.popBackStack() }
