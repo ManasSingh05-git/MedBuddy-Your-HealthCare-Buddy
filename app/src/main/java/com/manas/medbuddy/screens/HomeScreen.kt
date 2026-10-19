@@ -52,6 +52,7 @@ fun HomeScreen(
     onNavigateToSosSettings: () -> Unit,
     onNavigateToHospitalFinder: () -> Unit,
     onNavigateToHealthMap: () -> Unit,
+    onNavigateToSleepTracker: () -> Unit,
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
@@ -59,6 +60,8 @@ fun HomeScreen(
 
     val contactRepo = remember { EmergencyContactRepository.getInstance(context) }
     val hospitalRepo = remember { HospitalRepository(context) }
+    val sleepRepo = remember { com.manas.medbuddy.data.repository.SleepRepository.getInstance(context) }
+    val sleepRecords by sleepRepo.recordsFlow.collectAsState()
 
     val userId = try {
         FirebaseAuth.getInstance().currentUser?.uid
@@ -264,7 +267,13 @@ fun HomeScreen(
                     MetricCard("Water", "1.5 L", "Goal: 2.5 L", Modifier.weight(1f))
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
-                    MetricCard("Sleep", "7h 20m", "Restful", Modifier.weight(1f))
+                    val latestSleep = sleepRecords.firstOrNull()
+                    MetricCard(
+                        title = "Sleep",
+                        value = latestSleep?.getFormattedDuration() ?: "Track Sleep",
+                        subtitle = if (latestSleep != null) "Wake: ${latestSleep.getFormattedEndTime()}" else "Tap to log",
+                        modifier = Modifier.weight(1f)
+                    )
                     MetricCard("Medicines", if (loading) "-" else "${medicines.size} scheduled", "Today", Modifier.weight(1f))
                 }
             }
@@ -288,12 +297,12 @@ fun HomeScreen(
             Text("Quick actions", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ActionCard("Sleep Tracker", Modifier.weight(1f), onClick = onNavigateToSleepTracker)
                     ActionCard("Nearby Hospitals", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
-                    ActionCard("Health Map", Modifier.weight(1f), onClick = onNavigateToHealthMap)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ActionCard("Health Map", Modifier.weight(1f), onClick = onNavigateToHealthMap)
                     ActionCard("SOS Contacts", Modifier.weight(1f), onClick = onNavigateToSosSettings)
-                    ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
                 }
             }
 
