@@ -41,13 +41,16 @@ import com.manas.medbuddy.model.Medicine
 import com.manas.medbuddy.ui.components.AnimatedProgressRing
 import com.manas.medbuddy.ui.components.GlassCard
 import com.manas.medbuddy.ui.theme.*
+import com.manas.medbuddy.ui.theme.TextPrimaryDark as TextPrimary
+import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
 import com.manas.medbuddy.util.EmergencyCallHelper
 import com.manas.medbuddy.util.SosTapDetector
 import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
-    onAddMedicine: () -> Unit,
+    onNavigateToMedicines: () -> Unit = {},
+    onNavigateToHealth: () -> Unit = {},
     onNavigateToSettings: () -> Unit,
     onNavigateToSosSettings: () -> Unit,
     onNavigateToHospitalFinder: () -> Unit,
