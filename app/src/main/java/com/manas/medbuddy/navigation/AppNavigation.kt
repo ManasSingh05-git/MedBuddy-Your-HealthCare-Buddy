@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.manas.medbuddy.screens.ForgotPasswordScreen
+import com.manas.medbuddy.screens.HealthMapScreen
 import com.manas.medbuddy.screens.HomeScreen
 import com.manas.medbuddy.screens.HospitalFinderScreen
 import com.manas.medbuddy.screens.LoginScreen
@@ -23,6 +24,7 @@ object Routes {
     const val Settings = "settings"
     const val SosSettings = "sos_settings"
     const val HospitalFinder = "hospital_finder"
+    const val HealthMap = "health_map"
 }
 
 @Composable
@@ -57,6 +59,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onNavigateToSettings = { navController.navigate(Routes.Settings) },
                 onNavigateToSosSettings = { navController.navigate(Routes.SosSettings) },
                 onNavigateToHospitalFinder = { navController.navigate(Routes.HospitalFinder) },
+                onNavigateToHealthMap = { navController.navigate(Routes.HealthMap) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) { inclusive = true }
@@ -82,6 +85,11 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         }
         composable(Routes.HospitalFinder) {
             HospitalFinderScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.HealthMap) {
+            HealthMapScreen(
                 onBack = { navController.popBackStack() }
             )
         }

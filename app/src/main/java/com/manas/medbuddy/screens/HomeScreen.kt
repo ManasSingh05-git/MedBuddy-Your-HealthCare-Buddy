@@ -51,6 +51,7 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToSosSettings: () -> Unit,
     onNavigateToHospitalFinder: () -> Unit,
+    onNavigateToHealthMap: () -> Unit,
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
@@ -287,12 +288,12 @@ fun HomeScreen(
             Text("Quick actions", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
                     ActionCard("Nearby Hospitals", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
+                    ActionCard("Health Map", Modifier.weight(1f), onClick = onNavigateToHealthMap)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("SOS Contacts", Modifier.weight(1f), onClick = onNavigateToSosSettings)
-                    ActionCard("Health Log", Modifier.weight(1f), onClick = {})
+                    ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
                 }
             }
 

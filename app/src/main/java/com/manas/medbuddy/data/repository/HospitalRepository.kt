@@ -35,6 +35,11 @@ class HospitalRepository(private val context: Context) {
         return finePerm == PackageManager.PERMISSION_GRANTED || coarsePerm == PackageManager.PERMISSION_GRANTED
     }
 
+    suspend fun getUserLocation(): Location? {
+        if (!hasLocationPermission()) return null
+        return fetchCurrentLocation()
+    }
+
     suspend fun findNearestHospital(): HospitalSearchResult = withContext(Dispatchers.IO) {
         val result = searchNearbyHospitalsList(radiusMeters = 15000)
         return@withContext when (result) {
