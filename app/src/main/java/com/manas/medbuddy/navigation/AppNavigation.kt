@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.manas.medbuddy.screens.AddMedicineScreen
+import com.manas.medbuddy.screens.AiHealthInsightsScreen
 import com.manas.medbuddy.screens.ForgotPasswordScreen
 import com.manas.medbuddy.screens.HealthMapScreen
 import com.manas.medbuddy.screens.HealthScreen
@@ -41,6 +42,7 @@ object Routes {
     const val HealthMap = "health_map"
     const val SleepTracker = "sleep_tracker"
     const val WaterTracker = "water_tracker"
+    const val AiInsights = "ai_insights"
 }
 
 @Composable
@@ -254,6 +256,12 @@ fun AppNavigation(
 
         composable(Routes.WaterTracker) {
             WaterIntakeScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.AiInsights) {
+            AiHealthInsightsScreen(
                 onBack = { navController.popBackStack() }
             )
         }
