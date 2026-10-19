@@ -10,6 +10,7 @@ import com.manas.medbuddy.screens.ForgotPasswordScreen
 import com.manas.medbuddy.screens.HealthMapScreen
 import com.manas.medbuddy.screens.HealthScreen
 import com.manas.medbuddy.screens.HomeScreen
+import com.manas.medbuddy.screens.HospitalDetailsScreen
 import com.manas.medbuddy.screens.HospitalFinderScreen
 import com.manas.medbuddy.screens.LoginScreen
 import com.manas.medbuddy.screens.MedicineReminderScreen
@@ -34,6 +35,7 @@ object Routes {
     const val Settings = "settings"
     const val SosSettings = "sos_settings"
     const val HospitalFinder = "hospital_finder"
+    const val HospitalDetails = "hospital_details"
     const val HealthMap = "health_map"
     const val SleepTracker = "sleep_tracker"
     const val WaterTracker = "water_tracker"
@@ -209,6 +211,12 @@ fun AppNavigation(
 
         composable(Routes.HospitalFinder) {
             HospitalFinderScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.HospitalDetails) {
+            HospitalDetailsScreen(
                 onBack = { navController.popBackStack() }
             )
         }
