@@ -392,12 +392,12 @@ private fun ListViewContent(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        items(hospitals, key = { it.id }) { hospital ->
+        items(items = hospitals, key = { item -> item.id }) { hospitalItem ->
             HospitalCard(
-                hospital = hospital,
-                onClick = { onSelectHospital(hospital) },
-                onCall = { onCallHospital(hospital) },
-                onDirections = { onGetDirections(hospital) }
+                hospital = hospitalItem,
+                onClick = { onSelectHospital(hospitalItem) },
+                onCall = { onCallHospital(hospitalItem) },
+                onDirections = { onGetDirections(hospitalItem) }
             )
         }
     }

@@ -12,6 +12,7 @@ import com.manas.medbuddy.screens.HospitalFinderScreen
 import com.manas.medbuddy.screens.LoginScreen
 import com.manas.medbuddy.screens.SettingsScreen
 import com.manas.medbuddy.screens.SignupScreen
+import com.manas.medbuddy.screens.SleepReminderScreen
 import com.manas.medbuddy.screens.SleepTrackerScreen
 import com.manas.medbuddy.screens.SosSettingsScreen
 import com.manas.medbuddy.screens.SplashScreen
@@ -27,6 +28,7 @@ object Routes {
     const val HospitalFinder = "hospital_finder"
     const val HealthMap = "health_map"
     const val SleepTracker = "sleep_tracker"
+    const val SleepReminders = "sleep_reminders"
 }
 
 @Composable
@@ -73,6 +75,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         composable(Routes.Settings) {
             SettingsScreen(
                 onNavigateToSosSettings = { navController.navigate(Routes.SosSettings) },
+                onNavigateToSleepReminders = { navController.navigate(Routes.SleepReminders) },
                 onBack = { navController.popBackStack() },
                 onLogout = {
                     navController.navigate(Routes.Login) {
@@ -98,6 +101,11 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         }
         composable(Routes.SleepTracker) {
             SleepTrackerScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.SleepReminders) {
+            SleepReminderScreen(
                 onBack = { navController.popBackStack() }
             )
         }

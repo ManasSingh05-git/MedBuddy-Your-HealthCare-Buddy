@@ -37,12 +37,12 @@ class HospitalRepositoryTest {
         val h2 = Hospital("2", "Near Hospital", latitude = 0.0, longitude = 0.0, distanceInMeters = 1200f)
         val h3 = Hospital("3", "Closest Hospital", latitude = 0.0, longitude = 0.0, distanceInMeters = 300f)
 
-        val unsorted = listOf(h1, h2, h3)
-        val sorted = unsorted.sortedBy { it.distanceInMeters }
+        val unsortedList = listOf(h1, h2, h3)
+        val sortedList = unsortedList.sortedBy { item -> item.distanceInMeters }
 
-        assertEquals("Closest Hospital", sorted[0].name)
-        assertEquals("Near Hospital", sorted[1].name)
-        assertEquals("Far Hospital", sorted[2].name)
+        assertEquals("Closest Hospital", sortedList[0].name)
+        assertEquals("Near Hospital", sortedList[1].name)
+        assertEquals("Far Hospital", sortedList[2].name)
     }
 
     @Test
