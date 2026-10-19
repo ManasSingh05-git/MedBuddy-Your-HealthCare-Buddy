@@ -1,3 +1,4 @@
+
 package com.manas.medbuddy.navigation
 
 import androidx.compose.runtime.Composable
@@ -5,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+
 import com.manas.medbuddy.screens.ForgotPasswordScreen
 import com.manas.medbuddy.screens.HomeScreen
 import com.manas.medbuddy.screens.LoginScreen
@@ -23,56 +25,149 @@ object Routes {
     const val Home = "home"
     const val Medicines = "medicines"
     const val Health = "health"
+    const val Settings = "settings"
+    const val SosSettings = "sos_settings"
 }
 
 @Composable
-fun AppNavigation(navController: NavHostController = rememberNavController()) {
-    NavHost(navController = navController, startDestination = Routes.Splash) {
+fun AppNavigation(
+    navController: NavHostController = rememberNavController()
+) {
+    NavHost(
+        navController = navController,
+        startDestination = Routes.Splash
+    ) {
+
+        // Splash Screen
         composable(Routes.Splash) {
-            SplashScreen(onFinished = {
-                navController.navigate(Routes.Login) {
-                    popUpTo(Routes.Splash) { inclusive = true }
-                }
-            })
-        }
-        composable(Routes.Login) {
-            LoginScreen(
-                onLogin = { navController.navigateToHome() },
-                onSignup = { navController.navigate(Routes.Signup) },
-                onForgotPassword = { navController.navigate(Routes.ForgotPassword) }
-            )
-        }
-        composable(Routes.Signup) {
-            SignupScreen(
-                onSignup = { navController.navigateToHome() },
-                onLogin = { navController.popBackStack() }
-            )
-        }
-        composable(Routes.ForgotPassword) {
-            ForgotPasswordScreen(onBack = { navController.popBackStack() })
-        }
-        composable(Routes.Home) {
-            HomeScreen(
-                onNavigateToMedicines = { navController.navigate(Routes.Medicines) },
-                onNavigateToHealth = { navController.navigate(Routes.Health) },
-                onLogout = {
+            SplashScreen(
+                onFinished = {
                     navController.navigate(Routes.Login) {
-                        popUpTo(Routes.Home) { inclusive = true }
+                        popUpTo(Routes.Splash) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
                     }
                 }
             )
         }
-        composable(Routes.Medicines) {
-            MedicineScreen(onBack = { navController.popBackStack() })
+
+        // Login Screen
+        composable(Routes.Login) {
+            LoginScreen(
+                onLogin = {
+                    navController.navigateToHome()
+                },
+                onSignup = {
+                    navController.navigate(Routes.Signup)
+                },
+                onForgotPassword = {
+                    navController.navigate(Routes.ForgotPassword)
+                }
+            )
         }
+
+        // Signup Screen
+        composable(Routes.Signup) {
+            SignupScreen(
+                onSignup = {
+                    navController.navigateToHome()
+                },
+                onLogin = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // Forgot Password Screen
+        composable(Routes.ForgotPassword) {
+            ForgotPasswordScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // Home Screen
+        composable(Routes.Home) {
+            HomeScreen(
+                onNavigateToMedicines = {
+                    navController.navigate(Routes.Medicines)
+                },
+                onNavigateToHealth = {
+                    navController.navigate(Routes.Health)
+                },
+                onNavigateToSettings = {
+                    navController.navigate(Routes.Settings)
+                },
+                onNavigateToSosSettings = {
+                    navController.navigate(Routes.SosSettings)
+                },
+                onLogout = {
+                    navController.navigate(Routes.Login) {
+                        popUpTo(Routes.Home) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        // Medicines Screen
+        composable(Routes.Medicines) {
+            MedicineScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // Health Screen
         composable(Routes.Health) {
-            HealthScreen(onBack = { navController.popBackStack() })
+            HealthScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // Settings Screen
+        composable(Routes.Settings) {
+            SettingsScreen(
+                onNavigateToSosSettings = {
+                    navController.navigate(Routes.SosSettings)
+                },
+                onBack = {
+                    navController.popBackStack()
+                },
+                onLogout = {
+                    navController.navigate(Routes.Login) {
+                        popUpTo(Routes.Home) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        // SOS Settings Screen
+        composable(Routes.SosSettings) {
+            SosSettingsScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }
 
 private fun NavHostController.navigateToHome() {
     navigate(Routes.Home) {
-        popUpTo(Routes.Login) { inclusive = true }
+        popUpTo(Routes.Login) {
+            inclusive = true
+        }
+        launchSingleTop = true
     }
 }
