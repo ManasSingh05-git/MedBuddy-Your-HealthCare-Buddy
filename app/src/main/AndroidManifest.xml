@@ -13,6 +13,11 @@
         android:label="MedBuddy"
         android:supportsRtl="true"
         android:theme="@style/Theme.MedBuddy">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${PLACES_API_KEY}" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">

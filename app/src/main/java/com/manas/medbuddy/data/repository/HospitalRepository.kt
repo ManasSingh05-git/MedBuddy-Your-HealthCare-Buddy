@@ -29,7 +29,25 @@ class HospitalRepository(private val context: Context) {
     private val fusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context.applicationContext)
 
+    fun hasLocationPermission(): Boolean {
+        val finePerm = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+        val coarsePerm = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+        return finePerm == PackageManager.PERMISSION_GRANTED || coarsePerm == PackageManager.PERMISSION_GRANTED
+    }
+
     suspend fun findNearestHospital(): HospitalSearchResult = withContext(Dispatchers.IO) {
+        val result = searchNearbyHospitalsList(radiusMeters = 15000)
+        return@withContext when (result) {
+            is HospitalSearchResult.SuccessList -> {
+                val withPhone = result.hospitals.filter { it.phoneNumber.isNotBlank() && PhoneNumberValidator.isValid(it.phoneNumber) }
+                val nearest = withPhone.minByOrNull { it.distanceInMeters } ?: result.hospitals.minByOrNull { it.distanceInMeters }
+                if (nearest != null) HospitalSearchResult.Success(nearest) else HospitalSearchResult.NoHospitalFound
+            }
+            else -> result
+        }
+    }
+
+    suspend fun searchNearbyHospitalsList(radiusMeters: Int = 15000): HospitalSearchResult = withContext(Dispatchers.IO) {
         if (!hasLocationPermission()) {
             return@withContext HospitalSearchResult.PermissionDenied
         }
@@ -39,24 +57,47 @@ class HospitalRepository(private val context: Context) {
         val userLat = location.latitude
         val userLng = location.longitude
 
-        // 1. Try Google Places API if key configured
+        return@withContext fetchHospitalsAroundCoordinates(userLat, userLng, radiusMeters)
+    }
+
+    suspend fun searchHospitalsByManualQuery(query: String, radiusMeters: Int = 20000): HospitalSearchResult = withContext(Dispatchers.IO) {
+        if (query.trim().isEmpty()) {
+            return@withContext HospitalSearchResult.Error("Search query cannot be empty")
+        }
+
+        try {
+            val encodedQuery = URLEncoder.encode(query.trim(), "UTF-8")
+            val geocodeUrl = "https://nominatim.openstreetmap.org/search?q=$encodedQuery&format=json&limit=1"
+            val jsonStr = executeHttpGet(geocodeUrl) ?: return@withContext HospitalSearchResult.Error("Unable to locate specified address")
+            val array = JsonParser.parseString(jsonStr).asJsonArray
+            if (array.size() == 0) {
+                return@withContext HospitalSearchResult.Error("Location '$query' not found")
+            }
+            val first = array.get(0).asJsonObject
+            val lat = first.get("lat").asString.toDouble()
+            val lon = first.get("lon").asString.toDouble()
+
+            return@withContext fetchHospitalsAroundCoordinates(lat, lon, radiusMeters)
+        } catch (e: Exception) {
+            return@withContext HospitalSearchResult.Error("Manual search failed: ${e.localizedMessage}")
+        }
+    }
+
+    private fun fetchHospitalsAroundCoordinates(userLat: Double, userLng: Double, radiusMeters: Int): HospitalSearchResult {
         val placesApiKey = getPlacesApiKey()
         if (placesApiKey.isNotBlank()) {
-            val placesResult = searchGooglePlaces(userLat, userLng, placesApiKey)
-            if (placesResult is HospitalSearchResult.Success) {
-                return@withContext placesResult
+            val googleList = searchGooglePlacesList(userLat, userLng, placesApiKey, radiusMeters)
+            if (googleList.isNotEmpty()) {
+                return HospitalSearchResult.SuccessList(googleList.sortedBy { it.distanceInMeters })
             }
         }
 
-        // 2. Query Overpass API (OpenStreetMap)
-        val overpassResult = searchOverpassHospitals(userLat, userLng)
-        return@withContext overpassResult
-    }
-
-    private fun hasLocationPermission(): Boolean {
-        val finePerm = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-        val coarsePerm = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
-        return finePerm == PackageManager.PERMISSION_GRANTED || coarsePerm == PackageManager.PERMISSION_GRANTED
+        val overpassList = searchOverpassHospitalsList(userLat, userLng, radiusMeters)
+        return if (overpassList.isNotEmpty()) {
+            HospitalSearchResult.SuccessList(overpassList.sortedBy { it.distanceInMeters })
+        } else {
+            HospitalSearchResult.NoHospitalFound
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -67,7 +108,7 @@ class HospitalRepository(private val context: Context) {
                 Priority.PRIORITY_HIGH_ACCURACY,
                 cancellationTokenSource.token
             ).await() ?: fusedLocationClient.lastLocation.await()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
@@ -75,44 +116,55 @@ class HospitalRepository(private val context: Context) {
     private fun getPlacesApiKey(): String {
         return try {
             BuildConfig.PLACES_API_KEY
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             ""
         }
     }
 
-    private fun searchGooglePlaces(lat: Double, lng: Double, apiKey: String): HospitalSearchResult {
+    private fun searchGooglePlacesList(lat: Double, lng: Double, apiKey: String, radiusMeters: Int): List<Hospital> {
         return try {
             val urlString = "https://maps.googleapis.com/maps/api/place/nearbysearch/json" +
-                    "?location=$lat,$lng&radius=15000&type=hospital&key=$apiKey"
-            val jsonStr = executeHttpGet(urlString) ?: return HospitalSearchResult.Error("Places API network error")
+                    "?location=$lat,$lng&radius=$radiusMeters&type=hospital&key=$apiKey"
+            val jsonStr = executeHttpGet(urlString) ?: return emptyList()
             val root = JsonParser.parseString(jsonStr).asJsonObject
             val results = root.getAsJsonArray("results") ?: JsonArray()
 
-            val candidateHospitals = mutableListOf<Hospital>()
+            val hospitals = mutableListOf<Hospital>()
 
             for (element in results) {
                 val obj = element.asJsonObject
                 val placeId = obj.get("place_id")?.asString ?: continue
                 val name = obj.get("name")?.asString ?: "Hospital"
+                val vicinity = obj.get("vicinity")?.asString ?: ""
+                val rating = obj.get("rating")?.asDouble
+                val userRatingsTotal = obj.get("user_ratings_total")?.asInt
+                val openNow = obj.getAsJsonObject("opening_hours")?.get("open_now")?.asBoolean
+
                 val locationObj = obj.getAsJsonObject("geometry")?.getAsJsonObject("location") ?: continue
                 val hospLat = locationObj.get("lat").asDouble
                 val hospLng = locationObj.get("lng").asDouble
 
-                val phone = fetchPlacePhoneNumber(placeId, apiKey) ?: continue
-                if (!PhoneNumberValidator.isValid(phone)) continue
-
+                val phone = fetchPlacePhoneNumber(placeId, apiKey) ?: ""
                 val distance = calculateDistance(lat, lng, hospLat, hospLng)
-                candidateHospitals.add(Hospital(placeId, name, phone, hospLat, hospLng, distance))
-            }
 
-            val nearest = candidateHospitals.minByOrNull { it.distanceInMeters }
-            if (nearest != null) {
-                HospitalSearchResult.Success(nearest)
-            } else {
-                HospitalSearchResult.NoHospitalWithPhoneFound
+                hospitals.add(
+                    Hospital(
+                        id = placeId,
+                        name = name,
+                        phoneNumber = phone,
+                        address = vicinity,
+                        rating = rating,
+                        userRatingsTotal = userRatingsTotal,
+                        isOpenNow = openNow,
+                        latitude = hospLat,
+                        longitude = hospLng,
+                        distanceInMeters = distance
+                    )
+                )
             }
-        } catch (e: Exception) {
-            HospitalSearchResult.Error(e.localizedMessage ?: "Google Places API error")
+            hospitals
+        } catch (_: Exception) {
+            emptyList()
         }
     }
 
@@ -123,17 +175,15 @@ class HospitalRepository(private val context: Context) {
             val jsonStr = executeHttpGet(detailsUrl) ?: return null
             val root = JsonParser.parseString(jsonStr).asJsonObject
             val result = root.getAsJsonObject("result") ?: return null
-            val phone = result.get("international_phone_number")?.asString
+            result.get("international_phone_number")?.asString
                 ?: result.get("formatted_phone_number")?.asString
-            phone
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
 
-    private fun searchOverpassHospitals(userLat: Double, userLng: Double): HospitalSearchResult {
+    private fun searchOverpassHospitalsList(userLat: Double, userLng: Double, radiusMeters: Int): List<Hospital> {
         return try {
-            val radiusMeters = 15000
             val overpassQuery = "[out:json][timeout:15];" +
                     "(node[\"amenity\"=\"hospital\"](around:$radiusMeters,$userLat,$userLng);" +
                     "way[\"amenity\"=\"hospital\"](around:$radiusMeters,$userLat,$userLng););" +
@@ -142,11 +192,11 @@ class HospitalRepository(private val context: Context) {
             val encodedQuery = URLEncoder.encode(overpassQuery, "UTF-8")
             val urlString = "https://overpass-api.de/api/interpreter?data=$encodedQuery"
 
-            val jsonStr = executeHttpGet(urlString) ?: return HospitalSearchResult.Error("Unable to reach hospital location service")
+            val jsonStr = executeHttpGet(urlString) ?: return emptyList()
             val root = JsonParser.parseString(jsonStr).asJsonObject
             val elements = root.getAsJsonArray("elements") ?: JsonArray()
 
-            val hospitalsWithPhone = mutableListOf<Hospital>()
+            val list = mutableListOf<Hospital>()
 
             for (elem in elements) {
                 val obj = elem.asJsonObject
@@ -155,15 +205,17 @@ class HospitalRepository(private val context: Context) {
 
                 val name = tags.get("name")?.asString
                     ?: tags.get("name:en")?.asString
-                    ?: "Emergency Hospital"
+                    ?: "Medical Center / Hospital"
 
                 val phoneTag = tags.get("phone")?.asString
                     ?: tags.get("contact:phone")?.asString
                     ?: tags.get("emergency:phone")?.asString
                     ?: tags.get("phone:emergency")?.asString
-                    ?: continue
+                    ?: ""
 
-                if (!PhoneNumberValidator.isValid(phoneTag)) continue
+                val street = tags.get("addr:street")?.asString ?: ""
+                val city = tags.get("addr:city")?.asString ?: ""
+                val address = listOf(street, city).filter { it.isNotBlank() }.joinToString(", ")
 
                 val hospLat = obj.get("lat")?.asDouble
                     ?: obj.getAsJsonObject("center")?.get("lat")?.asDouble
@@ -173,17 +225,24 @@ class HospitalRepository(private val context: Context) {
                     ?: continue
 
                 val dist = calculateDistance(userLat, userLng, hospLat, hospLng)
-                hospitalsWithPhone.add(Hospital(id, name, phoneTag, hospLat, hospLng, dist))
+                list.add(
+                    Hospital(
+                        id = id,
+                        name = name,
+                        phoneNumber = phoneTag,
+                        address = address,
+                        rating = null,
+                        userRatingsTotal = null,
+                        isOpenNow = null,
+                        latitude = hospLat,
+                        longitude = hospLng,
+                        distanceInMeters = dist
+                    )
+                )
             }
-
-            val nearest = hospitalsWithPhone.minByOrNull { it.distanceInMeters }
-            if (nearest != null) {
-                HospitalSearchResult.Success(nearest)
-            } else {
-                HospitalSearchResult.NoHospitalWithPhoneFound
-            }
-        } catch (e: Exception) {
-            HospitalSearchResult.Error("Error searching nearby hospitals: ${e.localizedMessage}")
+            list
+        } catch (_: Exception) {
+            emptyList()
         }
     }
 
@@ -208,7 +267,7 @@ class HospitalRepository(private val context: Context) {
             } else {
                 null
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         } finally {
             connection?.disconnect()

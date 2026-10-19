@@ -50,6 +50,7 @@ fun HomeScreen(
     onAddMedicine: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToSosSettings: () -> Unit,
+    onNavigateToHospitalFinder: () -> Unit,
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
@@ -284,9 +285,15 @@ fun HomeScreen(
 
             // Actions
             Text("Quick actions", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
-                ActionCard("SOS Contacts", Modifier.weight(1f), onClick = onNavigateToSosSettings)
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
+                    ActionCard("Nearby Hospitals", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ActionCard("SOS Contacts", Modifier.weight(1f), onClick = onNavigateToSosSettings)
+                    ActionCard("Health Log", Modifier.weight(1f), onClick = {})
+                }
             }
 
             // Medicines List
@@ -476,7 +483,7 @@ fun HomeScreen(
                     }
                 )
             }
-            HospitalSearchResult.NoHospitalWithPhoneFound -> {
+            HospitalSearchResult.NoHospitalFound -> {
                 AlertDialog(
                     onDismissRequest = { hospitalSearchResult = null },
                     containerColor = DarkSurface,
@@ -491,6 +498,50 @@ fun HomeScreen(
                         }
                     }
                 )
+            }
+            is HospitalSearchResult.SuccessList -> {
+                val hospital = result.hospitals.firstOrNull()
+                if (hospital != null) {
+                    AlertDialog(
+                        onDismissRequest = { hospitalSearchResult = null },
+                        containerColor = DarkSurface,
+                        title = {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Icon(Icons.Default.Warning, contentDescription = null, tint = SOSRed)
+                                Text("Nearest Hospital Found", color = TextPrimary, fontWeight = FontWeight.Bold)
+                            }
+                        },
+                        text = {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("A triple tap was detected. Found closest emergency hospital:", color = TextSecondary)
+                                GlassCard(modifier = Modifier.fillMaxWidth()) {
+                                    Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Text(hospital.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                                        Text("Distance: ${hospital.getFormattedDistance()}", color = CyanPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                                        Text("Phone: ${hospital.phoneNumber}", color = TextPrimary, fontSize = 15.sp)
+                                    }
+                                }
+                                Text("Do you want to call this hospital now?", color = TextSecondary, fontSize = 13.sp)
+                            }
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    hospitalSearchResult = null
+                                    EmergencyCallHelper.initiateCall(context, hospital.phoneNumber)
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = SOSRed, contentColor = Color.White)
+                            ) {
+                                Text("Call Hospital", fontWeight = FontWeight.Bold)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { hospitalSearchResult = null }) {
+                                Text("Cancel", color = TextSecondary)
+                            }
+                        }
+                    )
+                }
             }
             is HospitalSearchResult.Error -> {
                 AlertDialog(
