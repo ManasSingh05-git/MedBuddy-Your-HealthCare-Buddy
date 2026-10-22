@@ -31,6 +31,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.manas.medbuddy.ui.components.GradientPillButton
 import com.manas.medbuddy.ui.components.HeartPillLogo
 import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SplashScreen(
@@ -38,10 +40,12 @@ fun SplashScreen(
     onAlreadyAuthenticated: () -> Unit = onFinished
 ) {
     LaunchedEffect(Unit) {
-        val currentUser = try {
-            FirebaseAuth.getInstance().currentUser
-        } catch (_: Exception) {
-            null
+        val currentUser = withContext(Dispatchers.IO) {
+            try {
+                FirebaseAuth.getInstance().currentUser
+            } catch (_: Exception) {
+                null
+            }
         }
         if (currentUser != null) {
             onAlreadyAuthenticated()
