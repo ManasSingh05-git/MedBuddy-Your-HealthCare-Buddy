@@ -18,6 +18,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MedBuddy">
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${PLACES_API_KEY}" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -28,6 +32,19 @@
         </activity>
 
         <receiver android:name=".reminder.ReminderReceiver" />
+
+        <receiver
+            android:name=".receiver.SleepReminderReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".receiver.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
 
     </application>
 </manifest>

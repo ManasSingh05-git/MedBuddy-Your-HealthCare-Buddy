@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -33,6 +34,7 @@ import com.manas.medbuddy.ui.theme.*
 @Composable
 fun SettingsScreen(
     onNavigateToSosSettings: () -> Unit,
+    onNavigateToSleepReminders: () -> Unit,
     onBack: () -> Unit,
     onLogout: () -> Unit
 ) {
@@ -99,6 +101,15 @@ fun SettingsScreen(
             )
 
             Text("Preferences & Account", color = TextSecondary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+
+            // Sleep Reminders Option
+            SettingsOptionCard(
+                title = "Sleep & Bedtime Reminders",
+                subtitle = "Configure bedtime notifications & wind-down alarms",
+                icon = Icons.Default.Notifications,
+                iconTint = CyanPrimary,
+                onClick = onNavigateToSleepReminders
+            )
 
             // Logout Option
             GlassCard(

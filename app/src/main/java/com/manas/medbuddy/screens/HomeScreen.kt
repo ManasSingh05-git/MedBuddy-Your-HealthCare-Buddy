@@ -1,5 +1,10 @@
 package com.manas.medbuddy.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,8 +23,11 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.LocalHospital
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Nightlight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
@@ -27,22 +35,27 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.firebase.FirebaseApp
+import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ValueEventListener
 import com.manas.medbuddy.data.MedicineRepository
+import com.manas.medbuddy.data.repository.EmergencyContactRepository
+import com.manas.medbuddy.data.repository.HospitalRepository
 import com.manas.medbuddy.model.DoseLog
 import com.manas.medbuddy.model.Medicine
 import com.manas.medbuddy.reminder.ReminderScheduler
 import com.manas.medbuddy.ui.components.AnimatedProgressRing
 import com.manas.medbuddy.ui.components.GlassCard
 import com.manas.medbuddy.ui.theme.*
+import com.manas.medbuddy.util.EmergencyCallHelper
+import com.manas.medbuddy.util.SosTapDetector
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -55,26 +68,26 @@ fun HomeScreen(
     onEditMedicine: (String) -> Unit = {},
     onNavigateToMedicines: () -> Unit = {},
     onNavigateToHealth: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToSosSettings: () -> Unit = {},
+    onNavigateToHospitalFinder: () -> Unit = {},
+    onNavigateToHealthMap: () -> Unit = {},
+    onNavigateToSleepTracker: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val scheduler = remember { ReminderScheduler(context) }
     val repository = remember { MedicineRepository(context) }
 
-<<<<<<< HEAD
-=======
     val contactRepo = remember { EmergencyContactRepository.getInstance(context) }
     val hospitalRepo = remember { HospitalRepository(context) }
 
-    val userId = try {
-        FirebaseAuth.getInstance().currentUser?.uid
-    } catch (e: Exception) {
-        null
-    }
->>>>>>> origin/fix/app-run-issues
     var medicines by remember { mutableStateOf<List<Medicine>>(emptyList()) }
     var doseLogs by remember { mutableStateOf<List<DoseLog>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
+
+    var showSingleTapDialog by remember { mutableStateOf(false) }
+    var showNoContactDialog by remember { mutableStateOf(false) }
 
     val themeMode = LocalThemeMode.current
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -89,14 +102,6 @@ fun HomeScreen(
 
     val todayStr = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) }
 
-<<<<<<< HEAD
-    DisposableEffect(Unit) {
-        val medListener: ValueEventListener? = try {
-            repository.listenToMedicines(
-                onUpdate = { list ->
-                    medicines = list
-                    loading = false
-=======
     val onSingleTap: () -> Unit = {
         val primary = contactRepo.getPrimaryContact()
         if (primary != null) {
@@ -107,16 +112,7 @@ fun HomeScreen(
     }
 
     val onTripleTap: () -> Unit = {
-        val hasFine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        val hasCoarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-
-        if (hasFine || hasCoarse) {
-            executeHospitalSearch()
-        } else {
-            locationPermissionLauncher.launch(
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
-            )
-        }
+        onNavigateToHospitalFinder()
     }
 
     val sosTapDetector = remember(coroutineScope) {
@@ -129,7 +125,6 @@ fun HomeScreen(
         )
     }
 
-    // Gentle pulse animation for SOS button
     val infiniteTransition = rememberInfiniteTransition(label = "sosPulse")
     val sosPulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -141,182 +136,12 @@ fun HomeScreen(
         label = "sosScale"
     )
 
-    DisposableEffect(userId) {
-        if (userId == null) {
-            loading = false
-            onDispose { }
-        } else {
-            try {
-                val reference = FirebaseDatabase.getInstance().reference.child("medicines").child(userId)
-                val listener = object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        medicines = snapshot.children.mapNotNull { child: DataSnapshot -> child.getValue(Medicine::class.java)?.copy(id = child.key ?: "") }
-                        loading = false
-                    }
-                    override fun onCancelled(error: DatabaseError) { loading = false }
-                }
-                reference.addValueEventListener(listener)
-                onDispose { reference.removeEventListener(listener) }
-            } catch (_: Exception) {
-                loading = false
-                onDispose { }
-            }
-        }
-    }
-
-    Scaffold(
-        containerColor = DarkBackground,
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { sosTapDetector.registerTap() },
-                containerColor = SOSRed,
-                contentColor = Color.White,
-                shape = CircleShape,
-                modifier = Modifier
-                    .padding(bottom = 12.dp)
-                    .scale(sosPulseScale),
-                elevation = FloatingActionButtonDefaults.elevation(8.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                ) {
-                    Icon(Icons.Default.Warning, contentDescription = "SOS Emergency", modifier = Modifier.size(26.dp))
-                    Text("SOS", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, letterSpacing = 1.sp)
-                }
-            }
-        },
-        floatingActionButtonPosition = FabPosition.Center,
-        bottomBar = {
-            NavigationBar(
-                containerColor = DarkSurface.copy(alpha = 0.9f),
-                contentColor = CyanPrimary,
-                tonalElevation = 8.dp
-            ) {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home") },
-                    selected = true,
-                    onClick = { },
-                    colors = NavigationBarItemDefaults.colors(selectedIconColor = CyanPrimary, unselectedIconColor = TextSecondary, indicatorColor = DarkSurface)
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                    label = { Text("Profile") },
-                    selected = false,
-                    onClick = { },
-                    colors = NavigationBarItemDefaults.colors(selectedIconColor = CyanPrimary, unselectedIconColor = TextSecondary)
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("Settings") },
-                    selected = false,
-                    onClick = onNavigateToSettings,
-                    colors = NavigationBarItemDefaults.colors(selectedIconColor = CyanPrimary, unselectedIconColor = TextSecondary)
-                )
-            }
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            // Header
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Good morning,", color = TextSecondary, fontSize = 16.sp)
-                    Text("Your Health Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                }
-                TextButton(onClick = {
-                    try { FirebaseAuth.getInstance().signOut() } catch (_: Exception) {}
-                    onLogout()
-                }) { 
-                    Text("Log out", color = SOSRed) 
-                }
-            }
-
-            // Health Score Ring
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                AnimatedProgressRing(
-                    progress = 0.85f,
-                    modifier = Modifier.size(160.dp),
-                    colors = listOf(CyanPrimary, VioletGradient),
-                    strokeWidth = 24f
-                )
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("85", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                    Text("Health Score", fontSize = 14.sp, color = TextSecondary)
-                }
-            }
-
-            // Metrics Grid
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
-                    MetricCard("Steps", "8,432", "Goal: 10k", Modifier.weight(1f))
-                    MetricCard("Distance", "5.2 km", "Daily", Modifier.weight(1f))
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
-                    MetricCard("Calories", "420 kcal", "Active", Modifier.weight(1f))
-                    MetricCard("Water", "1.5 L", "Goal: 2.5 L", Modifier.weight(1f))
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
-                    MetricCard("Sleep", "7h 20m", "Restful", Modifier.weight(1f))
-                    MetricCard("Medicines", if (loading) "-" else "${medicines.size} scheduled", "Today", Modifier.weight(1f))
-                }
-            }
-
-            // Next Reminder
-            GlassCard(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Your next reminder", color = CyanPrimary, fontWeight = FontWeight.Medium)
-                    val nextMed = medicines.firstOrNull()
-                    if (nextMed != null) {
-                        Text(nextMed.name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                        Text("${nextMed.dosage} at ${nextMed.time}", color = TextSecondary)
-                    } else {
-                        Text(if (loading) "Loading..." else "No medicine added", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                        Text(if (loading) "Please wait" else "Add your first medicine below", color = TextSecondary)
-                    }
-                }
-            }
-
-            // Actions
-            Text("Quick actions", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
-                ActionCard("SOS Contacts", Modifier.weight(1f), onClick = onNavigateToSosSettings)
-            }
-
-            // Medicines List
-            Text("My medicines", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-            when {
-                loading -> Text("Loading medicines...", color = TextSecondary)
-                medicines.isEmpty() -> Text("No medicines yet. Tap Add Medicine to begin.", color = TextSecondary)
-                else -> medicines.forEach { MedicineCard(it) }
-            }
-            
-            Spacer(modifier = Modifier.height(40.dp)) // Space for FAB
-        }
-    }
-
-    // 1. Single Tap Confirmation Dialog
-    if (showSingleTapDialog) {
-        val primaryContact = contactRepo.getPrimaryContact()
-        if (primaryContact != null) {
-            AlertDialog(
-                onDismissRequest = { showSingleTapDialog = false },
-                containerColor = DarkSurface,
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(Icons.Default.Phone, contentDescription = null, tint = SOSRed)
-                        Text("Confirm Emergency Call", color = TextPrimary, fontWeight = FontWeight.Bold)
-                    }
->>>>>>> origin/fix/app-run-issues
+    DisposableEffect(Unit) {
+        val medListener: ValueEventListener? = try {
+            repository.listenToMedicines(
+                onUpdate = { list ->
+                    medicines = list
+                    loading = false
                 },
                 onError = { loading = false }
             )
@@ -347,7 +172,7 @@ fun HomeScreen(
             ) {
                 Spacer(Modifier.height(32.dp))
                 Text(
-                    "MedBuddy Health Dashboard",
+                    "MedBuddy Dashboard",
                     modifier = Modifier.padding(16.dp),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
@@ -356,9 +181,12 @@ fun HomeScreen(
                 HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp), color = GlassBorder)
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.AccountCircle, contentDescription = "Profile", tint = CyanPrimary) },
-                    label = { Text("Profile & Details", color = TextPrimary) },
+                    label = { Text("Profile & Settings", color = TextPrimary) },
                     selected = false,
-                    onClick = { coroutineScope.launch { drawerState.close() } }
+                    onClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        onNavigateToSettings()
+                    }
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.MedicalServices, contentDescription = "Medicines", tint = CyanPrimary) },
@@ -370,10 +198,22 @@ fun HomeScreen(
                     }
                 )
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings", tint = CyanPrimary) },
-                    label = { Text("App Settings", color = TextPrimary) },
+                    icon = { Icon(Icons.Default.Nightlight, contentDescription = "Sleep Tracker", tint = CyanPrimary) },
+                    label = { Text("Sleep Tracker", color = TextPrimary) },
                     selected = false,
-                    onClick = { coroutineScope.launch { drawerState.close() } }
+                    onClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        onNavigateToSleepTracker()
+                    }
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.LocalHospital, contentDescription = "Nearby Hospitals", tint = CyanPrimary) },
+                    label = { Text("Nearby Hospitals", color = TextPrimary) },
+                    selected = false,
+                    onClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        onNavigateToHospitalFinder()
+                    }
                 )
                 Spacer(Modifier.weight(1f))
                 NavigationDrawerItem(
@@ -414,14 +254,24 @@ fun HomeScreen(
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { /* SOS Action preserved */ },
+                ExtendedFloatingActionButton(
+                    onClick = { sosTapDetector.registerTap() },
                     containerColor = SOSRed,
                     contentColor = Color.White,
                     shape = CircleShape,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier
+                        .padding(bottom = 12.dp)
+                        .scale(sosPulseScale),
+                    elevation = FloatingActionButtonDefaults.elevation(8.dp)
                 ) {
-                    Icon(Icons.Default.Warning, contentDescription = "SOS", modifier = Modifier.size(28.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    ) {
+                        Icon(Icons.Default.Warning, contentDescription = "SOS Emergency", modifier = Modifier.size(26.dp))
+                        Text("SOS", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, letterSpacing = 1.sp)
+                    }
                 }
             },
             floatingActionButtonPosition = FabPosition.Center
@@ -498,6 +348,11 @@ fun HomeScreen(
                     ActionCard("Schedules & History", Modifier.weight(1f), onClick = onOpenMedicineList)
                 }
 
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ActionCard("Sleep Tracker", Modifier.weight(1f), onClick = onNavigateToSleepTracker)
+                    ActionCard("Find Hospitals", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
+                }
+
                 // Medicines List
                 Text("My medicines", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                 when {
@@ -523,6 +378,59 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(40.dp)) // Space for FAB
             }
         }
+    }
+
+    if (showSingleTapDialog) {
+        val primary = contactRepo.getPrimaryContact()
+        AlertDialog(
+            onDismissRequest = { showSingleTapDialog = false },
+            containerColor = DarkSurface,
+            title = { Text("Emergency Call", color = TextPrimary, fontWeight = FontWeight.Bold) },
+            text = { Text("Call primary emergency contact '${primary?.name ?: "Contact"}' (${primary?.phoneNumber ?: ""})?", color = TextSecondary) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showSingleTapDialog = false
+                        if (primary != null) {
+                            EmergencyCallHelper.initiateCall(context, primary.phoneNumber)
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = SOSRed)
+                ) {
+                    Text("Call Now", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSingleTapDialog = false }) {
+                    Text("Cancel", color = TextSecondary)
+                }
+            }
+        )
+    }
+
+    if (showNoContactDialog) {
+        AlertDialog(
+            onDismissRequest = { showNoContactDialog = false },
+            containerColor = DarkSurface,
+            title = { Text("No Emergency Contact", color = TextPrimary, fontWeight = FontWeight.Bold) },
+            text = { Text("No primary emergency contact configured. Would you like to add one now?", color = TextSecondary) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showNoContactDialog = false
+                        onNavigateToSosSettings()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = CyanPrimary)
+                ) {
+                    Text("Configure SOS", color = Color.Black, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showNoContactDialog = false }) {
+                    Text("Cancel", color = TextSecondary)
+                }
+            }
+        )
     }
 }
 

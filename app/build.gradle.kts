@@ -14,7 +14,9 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField("String", "PLACES_API_KEY", "\"${project.findProperty("PLACES_API_KEY") ?: ""}\"")
+        val placesKey = (project.findProperty("PLACES_API_KEY") as String?) ?: ""
+        buildConfigField("String", "PLACES_API_KEY", "\"$placesKey\"")
+        manifestPlaceholders["PLACES_API_KEY"] = placesKey
     }
 
     buildTypes {
@@ -50,8 +52,10 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")
 
-    // Location & JSON dependencies for SOS Emergency System
+    // Location, Maps & JSON dependencies for SOS & Hospital Finder
     implementation("com.google.android.gms:play-services-location:21.4.0")
+    implementation("com.google.android.gms:play-services-maps:20.1.0")
+    implementation("com.google.maps.android:maps-compose:6.5.0")
     implementation("com.google.code.gson:gson:2.14.0")
 
     // Unit testing dependencies
