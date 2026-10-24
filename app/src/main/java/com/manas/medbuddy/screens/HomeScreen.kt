@@ -61,6 +61,17 @@ fun HomeScreen(
     val scheduler = remember { ReminderScheduler(context) }
     val repository = remember { MedicineRepository(context) }
 
+<<<<<<< HEAD
+=======
+    val contactRepo = remember { EmergencyContactRepository.getInstance(context) }
+    val hospitalRepo = remember { HospitalRepository(context) }
+
+    val userId = try {
+        FirebaseAuth.getInstance().currentUser?.uid
+    } catch (e: Exception) {
+        null
+    }
+>>>>>>> origin/fix/app-run-issues
     var medicines by remember { mutableStateOf<List<Medicine>>(emptyList()) }
     var doseLogs by remember { mutableStateOf<List<DoseLog>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
@@ -78,12 +89,234 @@ fun HomeScreen(
 
     val todayStr = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) }
 
+<<<<<<< HEAD
     DisposableEffect(Unit) {
         val medListener: ValueEventListener? = try {
             repository.listenToMedicines(
                 onUpdate = { list ->
                     medicines = list
                     loading = false
+=======
+    val onSingleTap: () -> Unit = {
+        val primary = contactRepo.getPrimaryContact()
+        if (primary != null) {
+            showSingleTapDialog = true
+        } else {
+            showNoContactDialog = true
+        }
+    }
+
+    val onTripleTap: () -> Unit = {
+        val hasFine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val hasCoarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+        if (hasFine || hasCoarse) {
+            executeHospitalSearch()
+        } else {
+            locationPermissionLauncher.launch(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+            )
+        }
+    }
+
+    val sosTapDetector = remember(coroutineScope) {
+        SosTapDetector(
+            scope = coroutineScope,
+            timeWindowMs = 1200L,
+            singleTapDelayMs = 350L,
+            onSingleTap = onSingleTap,
+            onTripleTap = onTripleTap
+        )
+    }
+
+    // Gentle pulse animation for SOS button
+    val infiniteTransition = rememberInfiniteTransition(label = "sosPulse")
+    val sosPulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "sosScale"
+    )
+
+    DisposableEffect(userId) {
+        if (userId == null) {
+            loading = false
+            onDispose { }
+        } else {
+            try {
+                val reference = FirebaseDatabase.getInstance().reference.child("medicines").child(userId)
+                val listener = object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        medicines = snapshot.children.mapNotNull { child: DataSnapshot -> child.getValue(Medicine::class.java)?.copy(id = child.key ?: "") }
+                        loading = false
+                    }
+                    override fun onCancelled(error: DatabaseError) { loading = false }
+                }
+                reference.addValueEventListener(listener)
+                onDispose { reference.removeEventListener(listener) }
+            } catch (_: Exception) {
+                loading = false
+                onDispose { }
+            }
+        }
+    }
+
+    Scaffold(
+        containerColor = DarkBackground,
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { sosTapDetector.registerTap() },
+                containerColor = SOSRed,
+                contentColor = Color.White,
+                shape = CircleShape,
+                modifier = Modifier
+                    .padding(bottom = 12.dp)
+                    .scale(sosPulseScale),
+                elevation = FloatingActionButtonDefaults.elevation(8.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                ) {
+                    Icon(Icons.Default.Warning, contentDescription = "SOS Emergency", modifier = Modifier.size(26.dp))
+                    Text("SOS", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, letterSpacing = 1.sp)
+                }
+            }
+        },
+        floatingActionButtonPosition = FabPosition.Center,
+        bottomBar = {
+            NavigationBar(
+                containerColor = DarkSurface.copy(alpha = 0.9f),
+                contentColor = CyanPrimary,
+                tonalElevation = 8.dp
+            ) {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+                    label = { Text("Home") },
+                    selected = true,
+                    onClick = { },
+                    colors = NavigationBarItemDefaults.colors(selectedIconColor = CyanPrimary, unselectedIconColor = TextSecondary, indicatorColor = DarkSurface)
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
+                    label = { Text("Profile") },
+                    selected = false,
+                    onClick = { },
+                    colors = NavigationBarItemDefaults.colors(selectedIconColor = CyanPrimary, unselectedIconColor = TextSecondary)
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                    label = { Text("Settings") },
+                    selected = false,
+                    onClick = onNavigateToSettings,
+                    colors = NavigationBarItemDefaults.colors(selectedIconColor = CyanPrimary, unselectedIconColor = TextSecondary)
+                )
+            }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            // Header
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Good morning,", color = TextSecondary, fontSize = 16.sp)
+                    Text("Your Health Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                }
+                TextButton(onClick = {
+                    try { FirebaseAuth.getInstance().signOut() } catch (_: Exception) {}
+                    onLogout()
+                }) { 
+                    Text("Log out", color = SOSRed) 
+                }
+            }
+
+            // Health Score Ring
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                AnimatedProgressRing(
+                    progress = 0.85f,
+                    modifier = Modifier.size(160.dp),
+                    colors = listOf(CyanPrimary, VioletGradient),
+                    strokeWidth = 24f
+                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("85", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    Text("Health Score", fontSize = 14.sp, color = TextSecondary)
+                }
+            }
+
+            // Metrics Grid
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
+                    MetricCard("Steps", "8,432", "Goal: 10k", Modifier.weight(1f))
+                    MetricCard("Distance", "5.2 km", "Daily", Modifier.weight(1f))
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
+                    MetricCard("Calories", "420 kcal", "Active", Modifier.weight(1f))
+                    MetricCard("Water", "1.5 L", "Goal: 2.5 L", Modifier.weight(1f))
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
+                    MetricCard("Sleep", "7h 20m", "Restful", Modifier.weight(1f))
+                    MetricCard("Medicines", if (loading) "-" else "${medicines.size} scheduled", "Today", Modifier.weight(1f))
+                }
+            }
+
+            // Next Reminder
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Your next reminder", color = CyanPrimary, fontWeight = FontWeight.Medium)
+                    val nextMed = medicines.firstOrNull()
+                    if (nextMed != null) {
+                        Text(nextMed.name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                        Text("${nextMed.dosage} at ${nextMed.time}", color = TextSecondary)
+                    } else {
+                        Text(if (loading) "Loading..." else "No medicine added", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                        Text(if (loading) "Please wait" else "Add your first medicine below", color = TextSecondary)
+                    }
+                }
+            }
+
+            // Actions
+            Text("Quick actions", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
+                ActionCard("SOS Contacts", Modifier.weight(1f), onClick = onNavigateToSosSettings)
+            }
+
+            // Medicines List
+            Text("My medicines", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+            when {
+                loading -> Text("Loading medicines...", color = TextSecondary)
+                medicines.isEmpty() -> Text("No medicines yet. Tap Add Medicine to begin.", color = TextSecondary)
+                else -> medicines.forEach { MedicineCard(it) }
+            }
+            
+            Spacer(modifier = Modifier.height(40.dp)) // Space for FAB
+        }
+    }
+
+    // 1. Single Tap Confirmation Dialog
+    if (showSingleTapDialog) {
+        val primaryContact = contactRepo.getPrimaryContact()
+        if (primaryContact != null) {
+            AlertDialog(
+                onDismissRequest = { showSingleTapDialog = false },
+                containerColor = DarkSurface,
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Default.Phone, contentDescription = null, tint = SOSRed)
+                        Text("Confirm Emergency Call", color = TextPrimary, fontWeight = FontWeight.Bold)
+                    }
+>>>>>>> origin/fix/app-run-issues
                 },
                 onError = { loading = false }
             )
