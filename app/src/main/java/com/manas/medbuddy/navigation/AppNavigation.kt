@@ -11,6 +11,7 @@ import com.manas.medbuddy.screens.AddEditMedicineScreen
 import com.manas.medbuddy.screens.AddMedicineScreen
 import com.manas.medbuddy.screens.AiHealthInsightsScreen
 import com.manas.medbuddy.screens.AllergyRegistryScreen
+import com.manas.medbuddy.screens.AppointmentOrganizerScreen
 import com.manas.medbuddy.screens.ForgotPasswordScreen
 import com.manas.medbuddy.screens.HealthCardScreen
 import com.manas.medbuddy.screens.HealthMapScreen
@@ -26,6 +27,7 @@ import com.manas.medbuddy.screens.MedicineReminderScreen
 import com.manas.medbuddy.screens.MedicineScreen
 import com.manas.medbuddy.screens.PrescriptionScannerScreen
 import com.manas.medbuddy.screens.ProfileScreen
+import com.manas.medbuddy.screens.RefillPlannerScreen
 import com.manas.medbuddy.screens.ReportExplainerScreen
 import com.manas.medbuddy.screens.SettingsScreen
 import com.manas.medbuddy.screens.SignupScreen
@@ -54,6 +56,8 @@ object Routes {
     const val VaccinationManager = "vaccination_manager"
     const val HealthTimeline = "health_timeline"
     const val HealthCard = "health_card"
+    const val AppointmentOrganizer = "appointment_organizer"
+    const val RefillPlanner = "refill_planner"
     const val Health = "health"
     const val Profile = "profile"
     const val Settings = "settings"
@@ -151,6 +155,8 @@ fun AppNavigation(
                 onNavigateToVaccinationManager = { navController.navigate(Routes.VaccinationManager) },
                 onNavigateToHealthTimeline = { navController.navigate(Routes.HealthTimeline) },
                 onNavigateToHealthCard = { navController.navigate(Routes.HealthCard) },
+                onNavigateToAppointmentOrganizer = { navController.navigate(Routes.AppointmentOrganizer) },
+                onNavigateToRefillPlanner = { navController.navigate(Routes.RefillPlanner) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -159,6 +165,20 @@ fun AppNavigation(
                         launchSingleTop = true
                     }
                 }
+            )
+        }
+
+        // Refill Planner Screen
+        composable(Routes.RefillPlanner) {
+            RefillPlannerScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Appointment Organizer Screen
+        composable(Routes.AppointmentOrganizer) {
+            AppointmentOrganizerScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
