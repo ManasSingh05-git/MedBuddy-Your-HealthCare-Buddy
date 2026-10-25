@@ -104,6 +104,9 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    onAddMedicine: () -> Unit = {},
+    onOpenMedicineList: () -> Unit = {},
+    onEditMedicine: (String) -> Unit = {},
     onNavigateToMedicines: () -> Unit = {},
     onNavigateToHealth: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
@@ -111,6 +114,26 @@ fun HomeScreen(
     onNavigateToHospitalFinder: () -> Unit = {},
     onNavigateToHealthMap: () -> Unit = {},
     onNavigateToSleepTracker: () -> Unit = {},
+    onNavigateToPrescriptionScanner: () -> Unit = {},
+    onNavigateToReportExplainer: () -> Unit = {},
+    onNavigateToMedicalVault: () -> Unit = {},
+    onNavigateToAllergyRegistry: () -> Unit = {},
+    onNavigateToVaccinationManager: () -> Unit = {},
+    onNavigateToHealthTimeline: () -> Unit = {},
+    onNavigateToHealthCard: () -> Unit = {},
+    onNavigateToAppointmentOrganizer: () -> Unit = {},
+    onNavigateToSymptomJournal: () -> Unit = {},
+    onNavigateToDoctorPrep: () -> Unit = {},
+    onNavigateToMedicalGlossary: () -> Unit = {},
+    onNavigateToWellnessCoach: () -> Unit = {},
+    onNavigateToReportComparison: () -> Unit = {},
+    onNavigateToFamilyProfiles: () -> Unit = {},
+    onNavigateToCaregiverDashboard: () -> Unit = {},
+    onNavigateToFamilyCalendar: () -> Unit = {},
+    onNavigateToAdherenceReports: () -> Unit = {},
+    onNavigateToDocumentSharing: () -> Unit = {},
+    onNavigateToMenstrualTracker: () -> Unit = {},
+    onNavigateToMovementCoach: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
