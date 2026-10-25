@@ -14,6 +14,7 @@ import com.manas.medbuddy.screens.AllergyRegistryScreen
 import com.manas.medbuddy.screens.ForgotPasswordScreen
 import com.manas.medbuddy.screens.HealthMapScreen
 import com.manas.medbuddy.screens.HealthScreen
+import com.manas.medbuddy.screens.HealthTimelineScreen
 import com.manas.medbuddy.screens.HomeScreen
 import com.manas.medbuddy.screens.HospitalDetailsScreen
 import com.manas.medbuddy.screens.HospitalFinderScreen
@@ -50,6 +51,7 @@ object Routes {
     const val MedicalVault = "medical_vault"
     const val AllergyRegistry = "allergy_registry"
     const val VaccinationManager = "vaccination_manager"
+    const val HealthTimeline = "health_timeline"
     const val Health = "health"
     const val Profile = "profile"
     const val Settings = "settings"
@@ -145,6 +147,7 @@ fun AppNavigation(
                 onNavigateToMedicalVault = { navController.navigate(Routes.MedicalVault) },
                 onNavigateToAllergyRegistry = { navController.navigate(Routes.AllergyRegistry) },
                 onNavigateToVaccinationManager = { navController.navigate(Routes.VaccinationManager) },
+                onNavigateToHealthTimeline = { navController.navigate(Routes.HealthTimeline) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -152,6 +155,16 @@ fun AppNavigation(
                         }
                         launchSingleTop = true
                     }
+                }
+            )
+        }
+
+        // Health Timeline Screen
+        composable(Routes.HealthTimeline) {
+            HealthTimelineScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToRoute = { route ->
+                    if (route.isNotBlank()) navController.navigate(route)
                 }
             )
         }
