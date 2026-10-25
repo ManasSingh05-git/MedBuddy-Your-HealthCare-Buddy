@@ -130,6 +130,7 @@ fun HomeScreen(
     onNavigateToDocumentSharing: () -> Unit = {},
     onNavigateToMenstrualTracker: () -> Unit = {},
     onNavigateToMovementCoach: () -> Unit = {},
+    onNavigateToMoreHealthOptions: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -451,6 +452,37 @@ fun HomeScreen(
                 ActionTile("Appointments", Icons.Default.CalendarMonth, CyanPrimary, Modifier.weight(1f), onClick = onNavigateToAppointmentOrganizer)
                 ActionTile("Health Map", Icons.Default.LocationOn, BlueGradient, Modifier.weight(1f), onClick = onNavigateToHealthMap)
                 ActionTile("SOS", Icons.Default.Warning, SOSRed, Modifier.weight(1f), onClick = { sosTapDetector.registerTap() })
+            }
+
+            // Prominent "More Health Options" Banner Card
+            GlassCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onNavigateToMoreHealthOptions() },
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(18.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(Brush.linearGradient(listOf(EmeraldPrimary, CyanPrimary))),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("✨", fontSize = 22.sp)
+                    }
+
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text("More Health Options", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text("Access 20+ specialized medical tools & AI features", color = TextSecondary, fontSize = 12.sp)
+                    }
+
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = CyanPrimary, modifier = Modifier.size(20.dp))
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

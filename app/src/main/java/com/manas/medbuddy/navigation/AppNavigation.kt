@@ -35,6 +35,7 @@ import com.manas.medbuddy.screens.MedicineListScreen
 import com.manas.medbuddy.screens.MedicineReminderScreen
 import com.manas.medbuddy.screens.MedicineScreen
 import com.manas.medbuddy.screens.MenstrualTrackerScreen
+import com.manas.medbuddy.screens.MoreHealthOptionsScreen
 import com.manas.medbuddy.screens.MovementCoachScreen
 import com.manas.medbuddy.screens.PersonalInformationScreen
 import com.manas.medbuddy.screens.PrescriptionScannerScreen
@@ -62,6 +63,7 @@ object Routes {
     const val ForgotPassword = "forgot_password"
     const val Home = "home"
     const val Tools = "tools"
+    const val MoreHealthOptions = "more_health_options"
     const val Assistant = "assistant"
     const val Appointments = "appointments"
     const val Reports = "reports"
@@ -201,6 +203,7 @@ fun AppNavigation(
                 onNavigateToDocumentSharing = { navController.navigate(Routes.DocumentSharing) },
                 onNavigateToMenstrualTracker = { navController.navigate(Routes.MenstrualTracker) },
                 onNavigateToMovementCoach = { navController.navigate(Routes.MovementCoach) },
+                onNavigateToMoreHealthOptions = { navController.navigate(Routes.MoreHealthOptions) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -220,6 +223,16 @@ fun AppNavigation(
                 },
                 onTabSelected = { tab ->
                     handleBottomTabNavigation(navController, tab)
+                }
+            )
+        }
+
+        // Dedicated More Health Options Hub Screen
+        composable(Routes.MoreHealthOptions) {
+            MoreHealthOptionsScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToRoute = { route ->
+                    if (route.isNotBlank()) navController.navigate(route)
                 }
             )
         }
