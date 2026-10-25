@@ -2,8 +2,6 @@ package com.manas.medbuddy.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -15,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DarkMode
@@ -24,7 +23,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocalHospital
-import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Nightlight
@@ -42,7 +40,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ValueEventListener
 import com.manas.medbuddy.data.MedicineRepository
@@ -80,7 +77,6 @@ fun HomeScreen(
     val repository = remember { MedicineRepository(context) }
 
     val contactRepo = remember { EmergencyContactRepository.getInstance(context) }
-    val hospitalRepo = remember { HospitalRepository(context) }
 
     var medicines by remember { mutableStateOf<List<Medicine>>(emptyList()) }
     var doseLogs by remember { mutableStateOf<List<DoseLog>>(emptyList()) }

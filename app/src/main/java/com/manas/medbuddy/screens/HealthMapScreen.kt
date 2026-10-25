@@ -55,6 +55,8 @@ import com.manas.medbuddy.data.model.HospitalSearchResult
 import com.manas.medbuddy.data.repository.HospitalRepository
 import com.manas.medbuddy.ui.components.GlassCard
 import com.manas.medbuddy.ui.theme.*
+import com.manas.medbuddy.ui.theme.TextPrimaryDark as TextPrimary
+import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
 import com.manas.medbuddy.util.EmergencyCallHelper
 import com.manas.medbuddy.util.PhoneNumberValidator
 import kotlinx.coroutines.launch
@@ -273,7 +275,7 @@ fun HealthMapScreen(onBack: () -> Unit) {
                         focusedContainerColor = DarkSurface.copy(alpha = 0.95f),
                         unfocusedContainerColor = DarkSurface.copy(alpha = 0.9f),
                         focusedBorderColor = CyanPrimary,
-                        unfocusedBorderColor = GlassBorder,
+                        unfocusedBorderColor = DarkSurface,
                         focusedTextColor = TextPrimary,
                         unfocusedTextColor = TextPrimary
                     ),

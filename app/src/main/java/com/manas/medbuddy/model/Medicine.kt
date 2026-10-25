@@ -24,9 +24,12 @@ data class Medicine(
     val name: String = "",
     val dosage: String = "",
     val time: String = "",
-    val instructions: String = "",
+    val frequency: String = "Daily",
+    val instructions: String = "Take after food",
     val startDate: String = "",
     val endDate: String = "",
+    val isActive: Boolean = true,
+    val isTaken: Boolean = false,
     val scheduleType: String = "DAILY",
     val selectedDays: List<String> = emptyList(),
     val reminderTimes: List<ReminderTime> = emptyList()

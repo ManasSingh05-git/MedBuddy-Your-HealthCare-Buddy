@@ -1,166 +1,201 @@
 package com.manas.medbuddy.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.manas.medbuddy.ui.components.AnimatedProgressRing
 import com.manas.medbuddy.ui.components.GlassCard
-import com.manas.medbuddy.ui.theme.*
-import kotlinx.coroutines.delay
+import com.manas.medbuddy.ui.theme.CyanPrimary
+import com.manas.medbuddy.ui.theme.DarkBackground
+import com.manas.medbuddy.ui.theme.DarkSurface
+import com.manas.medbuddy.ui.theme.EmeraldPrimary
+import com.manas.medbuddy.ui.theme.TextPrimaryDark as TextPrimary
+import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HealthScreen(onBack: () -> Unit) {
-    var waterIntake by remember { mutableStateOf(0) }
-    var showCelebration by remember { mutableStateOf(false) }
+fun HealthScreen(
+    onBack: () -> Unit
+) {
+    var selectedTab by remember { mutableStateOf("Today") } // "Today", "Week", "Month"
 
-    LaunchedEffect(waterIntake) {
-        if (waterIntake == 8) { // Goal reached
-            showCelebration = true
-            delay(3500)
-            showCelebration = false
+    Scaffold(
+        containerColor = DarkBackground,
+        topBar = {
+            TopAppBar(
+                title = { Text("Health Tracking", color = TextPrimary, fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkSurface)
+            )
         }
-    }
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            containerColor = MaterialTheme.colorScheme.background,
-            topBar = {
-                TopAppBar(
-                    title = { Text("Health Overview", fontWeight = FontWeight.Bold) },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                )
-            }
-        ) { paddingValues ->
-            Column(
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            // Time Tabs (Today, Week, Month)
+            Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .fillMaxWidth()
+                    .background(DarkSurface, RoundedCornerShape(20.dp))
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Water Intake Tracker
-                Text("Hydration Goal", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                GlassCard(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                listOf("Today", "Week", "Month").forEach { tab ->
+                    val isSelected = selectedTab == tab
+                    Surface(
+                        onClick = { selectedTab = tab },
+                        shape = RoundedCornerShape(16.dp),
+                        color = if (isSelected) EmeraldPrimary else Color.Transparent,
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text("Water Intake", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp)
-                        Text("$waterIntake / 8 Glasses", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = CyanPrimary)
-                        
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(24.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        Box(
+                            modifier = Modifier.padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            IconButton(
-                                onClick = { if (waterIntake > 0) waterIntake-- },
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
-                            ) {
-                                Icon(Icons.Default.Remove, contentDescription = "Decrease", tint = MaterialTheme.colorScheme.onSurface)
-                            }
-                            
-                            IconButton(
-                                onClick = { waterIntake++ },
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(12.dp))
-                            ) {
-                                Icon(Icons.Default.Add, contentDescription = "Increase", tint = MaterialTheme.colorScheme.primary)
-                            }
+                            Text(
+                                text = tab,
+                                color = if (isSelected) Color.Black else TextSecondary,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                fontSize = 13.sp
+                            )
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Other Metrics
-                Text("Daily Stats", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
-                    HealthMetricCard("Steps", "8,432", "Goal: 10k", Modifier.weight(1f))
-                    HealthMetricCard("Distance", "5.2 km", "Daily", Modifier.weight(1f))
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
-                    HealthMetricCard("Calories", "420 kcal", "Active", Modifier.weight(1f))
-                    HealthMetricCard("Sleep", "7h 20m", "Restful", Modifier.weight(1f))
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
-                    HealthMetricCard("Heart Rate", "72 bpm", "Resting", Modifier.weight(1f))
-                    HealthMetricCard("Blood Pressure", "120/80", "Normal", Modifier.weight(1f))
-                }
             }
-        }
 
-        // Celebration Overlay
-        AnimatedVisibility(
-            visible = showCelebration,
-            enter = scaleIn(spring(dampingRatio = 0.5f, stiffness = 100f)) + fadeIn(),
-            exit = scaleOut(tween(500)) + fadeOut(tween(500)),
-            modifier = Modifier.align(Alignment.Center)
-        ) {
+            // Circular Steps Progress Ring
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.7f)),
+                modifier = Modifier.size(200.dp),
                 contentAlignment = Alignment.Center
             ) {
+                AnimatedProgressRing(
+                    progress = 0.54f,
+                    modifier = Modifier.size(200.dp),
+                    colors = listOf(EmeraldPrimary, CyanPrimary),
+                    strokeWidth = 20f
+                )
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    Text(
-                        text = "🎊 YIPPEE! 🎊",
-                        fontSize = 52.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFFFFD700), // Gold
-                        textAlign = TextAlign.Center
+                    Text("👟", fontSize = 28.sp)
+                    Text("5,420", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = TextPrimary)
+                    Text("Steps", fontSize = 14.sp, color = TextSecondary)
+                    Text("Goal: 10,000 steps", fontSize = 12.sp, color = CyanPrimary, fontWeight = FontWeight.SemiBold)
+                }
+            }
+
+            // 3 Stat Cards Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                HealthStatPill("📍", "3.2 km", "Distance", Modifier.weight(1f))
+                HealthStatPill("🔥", "320 kcal", "Calories", Modifier.weight(1f))
+                HealthStatPill("⏱️", "45 min", "Active Time", Modifier.weight(1f))
+            }
+
+            // Weekly Steps Bar Chart
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Steps This Week", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                        Text("10K Goal", color = CyanPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    }
+
+                    // Bar Chart
+                    val weekData = listOf(
+                        "Mon" to 0.4f,
+                        "Tue" to 0.65f,
+                        "Wed" to 0.35f,
+                        "Thu" to 0.85f,
+                        "Fri" to 0.54f,
+                        "Sat" to 0.9f,
+                        "Sun" to 0.45f
                     )
-                    Text(
-                        text = "Goal Reached!\nYou drank 8 glasses of water!",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.White,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = "🥳 🎈 💦 💧",
-                        fontSize = 40.sp
-                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        weekData.forEach { (day, barProgress) ->
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .width(16.dp)
+                                        .height((100 * barProgress).dp)
+                                        .background(
+                                            if (day == "Fri") EmeraldPrimary else CyanPrimary.copy(alpha = 0.6f),
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                )
+                                Text(day, color = TextSecondary, fontSize = 11.sp)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -168,12 +203,21 @@ fun HealthScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun HealthMetricCard(title: String, value: String, subtitle: String, modifier: Modifier) {
+private fun HealthStatPill(
+    icon: String,
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier
+) {
     GlassCard(modifier = modifier) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(title, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
-            Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-            Text(subtitle, color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
+        Column(
+            modifier = Modifier.padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(icon, fontSize = 18.sp)
+            Text(value, color = TextPrimary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+            Text(label, color = TextSecondary, fontSize = 11.sp, textAlign = TextAlign.Center)
         }
     }
 }

@@ -42,6 +42,8 @@ import com.manas.medbuddy.data.model.SleepRecord
 import com.manas.medbuddy.data.repository.SleepRepository
 import com.manas.medbuddy.ui.components.GlassCard
 import com.manas.medbuddy.ui.theme.*
+import com.manas.medbuddy.ui.theme.TextPrimaryDark as TextPrimary
+import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
 import com.manas.medbuddy.util.SleepCalculator
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
@@ -594,7 +596,7 @@ private fun SleepRecordCard(
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     (1..5).forEach { star ->
                         Icon(
-                            Icons.Default.Star,
+                            imageVector = Icons.Default.Star,
                             contentDescription = null,
                             tint = if (star <= record.qualityRating) Color(0xFFFFD700) else TextSecondary.copy(alpha = 0.3f),
                             modifier = Modifier.size(12.dp)

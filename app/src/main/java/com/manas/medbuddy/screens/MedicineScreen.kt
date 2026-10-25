@@ -1,16 +1,53 @@
 package com.manas.medbuddy.screens
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,26 +58,29 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.manas.medbuddy.model.Medicine
 import com.manas.medbuddy.ui.components.GlassCard
-import java.util.Calendar
+import com.manas.medbuddy.ui.components.GradientPillButton
+import com.manas.medbuddy.ui.theme.CyanPrimary
+import com.manas.medbuddy.ui.theme.DarkBackground
+import com.manas.medbuddy.ui.theme.DarkSurface
+import com.manas.medbuddy.ui.theme.EmeraldPrimary
+import com.manas.medbuddy.ui.theme.TextPrimaryDark as TextPrimary
+import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MedicineScreen(onBack: () -> Unit) {
-    val userId = try {
-        FirebaseAuth.getInstance().currentUser?.uid
-    } catch (e: Exception) {
-        null
-    }
-    
+fun MedicineScreen(
+    onBack: () -> Unit,
+    onNavigateToAddMedicine: () -> Unit = {}
+) {
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedFilter by remember { mutableStateOf("All") } // "All", "Active", "Completed"
     var medicines by remember { mutableStateOf<List<Medicine>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
 
-    // Time-based greeting
-    val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-    val greeting = when (currentHour) {
-        in 0..11 -> "Good morning"
-        in 12..16 -> "Good afternoon"
-        else -> "Good evening"
+    val userId = try {
+        FirebaseAuth.getInstance().currentUser?.uid
+    } catch (_: Exception) {
+        null
     }
 
     DisposableEffect(userId) {
@@ -52,44 +92,60 @@ fun MedicineScreen(onBack: () -> Unit) {
                 val reference = FirebaseDatabase.getInstance().reference.child("medicines").child(userId)
                 val listener = object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        medicines = snapshot.children.mapNotNull { child -> child.getValue(Medicine::class.java)?.copy(id = child.key ?: "") }
+                        medicines = snapshot.children.mapNotNull { child: DataSnapshot ->
+                            child.getValue(Medicine::class.java)?.copy(id = child.key ?: "")
+                        }
                         loading = false
                     }
                     override fun onCancelled(error: DatabaseError) { loading = false }
                 }
                 reference.addValueEventListener(listener)
                 onDispose { reference.removeEventListener(listener) }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 loading = false
                 onDispose { }
             }
         }
     }
 
+    // Default sample data if firebase empty
+    val displayMedicines = if (medicines.isEmpty() && !loading) {
+        listOf(
+            Medicine(id = "1", name = "Paracetamol", dosage = "500 mg", time = "Daily • 9:00 AM", instructions = "1 tablet", isActive = true, isTaken = true),
+            Medicine(id = "2", name = "Vitamin D3", dosage = "1000 IU", time = "Daily • 1:00 PM", instructions = "1 tablet", isActive = true, isTaken = false),
+            Medicine(id = "3", name = "BP Tablet", dosage = "10 mg", time = "Daily • 9:00 PM", instructions = "1 tablet", isActive = true, isTaken = false),
+            Medicine(id = "4", name = "Omega 3", dosage = "500 mg", time = "Daily • 11:00 AM", instructions = "1 capsule", isActive = false, isTaken = true)
+        )
+    } else {
+        medicines
+    }
+
+    val filteredList = displayMedicines.filter { med ->
+        val matchesSearch = med.name.contains(searchQuery, ignoreCase = true)
+        val matchesFilter = when (selectedFilter) {
+            "Active" -> med.isActive
+            "Completed" -> med.isTaken
+            else -> true
+        }
+        matchesSearch && matchesFilter
+    }
+
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = DarkBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Medicines", fontWeight = FontWeight.Bold) },
+                title = { Text("My Medicines", color = TextPrimary, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { /* TODO: Show Add Medicine Dialog or Navigate to Add Form */ },
-                icon = { Icon(Icons.Default.Add, contentDescription = "Add") },
-                text = { Text("Add Medicine") },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                actions = {
+                    IconButton(onClick = { }) {
+                        Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = TextPrimary)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkSurface)
             )
         }
     ) { paddingValues ->
@@ -99,48 +155,133 @@ fun MedicineScreen(onBack: () -> Unit) {
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
                 .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header
-            Column {
-                Text("$greeting, User!", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp)
-                Text("Your Medicines", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            // Search Bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Search medicine...", color = TextSecondary) },
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary)
+                },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = CyanPrimary,
+                    unfocusedBorderColor = DarkSurface,
+                    focusedContainerColor = DarkSurface,
+                    unfocusedContainerColor = DarkSurface,
+                    focusedTextColor = TextPrimary,
+                    unfocusedTextColor = TextPrimary
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // Filter Chips (All, Active, Completed)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                FilterChipItem(label = "All (${displayMedicines.size})", isSelected = selectedFilter == "All") {
+                    selectedFilter = "All"
+                }
+                FilterChipItem(label = "Active (${displayMedicines.count { it.isActive }})", isSelected = selectedFilter == "Active") {
+                    selectedFilter = "Active"
+                }
+                FilterChipItem(label = "Completed", isSelected = selectedFilter == "Completed") {
+                    selectedFilter = "Completed"
+                }
             }
 
             // Medicines List
             if (loading) {
-                Text("Loading medicines...", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            } else if (medicines.isEmpty()) {
-                GlassCard(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier.padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("No medicines yet", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Tap + to add your first medicine.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
+                CircularProgressIndicator(color = CyanPrimary, modifier = Modifier.align(Alignment.CenterHorizontally))
+            } else if (filteredList.isEmpty()) {
+                Text("No medicines found.", color = TextSecondary, modifier = Modifier.padding(vertical = 20.dp))
             } else {
-                medicines.forEach { medicine ->
-                    GlassCard(modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                            modifier = Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column {
-                                Text(medicine.name, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text("${medicine.dosage} • ${medicine.time}", color = MaterialTheme.colorScheme.primary)
-                            }
-                            // Could add a delete/edit button here later
-                        }
-                    }
+                filteredList.forEach { med ->
+                    MedicineDetailCard(medicine = med)
                 }
             }
-            
-            Spacer(modifier = Modifier.height(80.dp)) // Extra space for FAB
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // + Add Medicine Button
+            GradientPillButton(
+                text = "+ Add Medicine",
+                onClick = onNavigateToAddMedicine
+            )
+        }
+    }
+}
+
+@Composable
+private fun FilterChipItem(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(20.dp),
+        color = if (isSelected) EmeraldPrimary else DarkSurface,
+        modifier = Modifier.height(38.dp)
+    ) {
+        Box(
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = label,
+                color = if (isSelected) Color.Black else TextPrimary,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                fontSize = 13.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun MedicineDetailCard(
+    medicine: Medicine
+) {
+    var isActiveState by remember { mutableStateOf(medicine.isActive) }
+
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(CircleShape)
+                    .background(Brush.linearGradient(listOf(EmeraldPrimary.copy(alpha = 0.2f), CyanPrimary.copy(alpha = 0.2f)))),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("💊", fontSize = 20.sp)
+            }
+
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(medicine.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                Text("${medicine.dosage} • ${medicine.instructions}", color = TextSecondary, fontSize = 13.sp)
+                Text(medicine.time, color = CyanPrimary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+            }
+
+            Switch(
+                checked = isActiveState,
+                onCheckedChange = { isActiveState = it },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = EmeraldPrimary,
+                    uncheckedThumbColor = Color.Gray,
+                    uncheckedTrackColor = Color.DarkGray
+                )
+            )
         }
     }
 }
