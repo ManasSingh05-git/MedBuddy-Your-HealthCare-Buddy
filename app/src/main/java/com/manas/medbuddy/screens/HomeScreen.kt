@@ -112,6 +112,7 @@ fun HomeScreen(
     onNavigateToHealthMap: () -> Unit = {},
     onNavigateToSleepTracker: () -> Unit = {},
     onNavigateToSymptomJournal: () -> Unit = {},
+    onNavigateToDoctorPrep: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -483,8 +484,8 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                QuickActionPill("Doctor Prep", Modifier.weight(1f), onClick = onNavigateToDoctorPrep)
                 QuickActionPill("Hospital Finder", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
-                QuickActionPill("Health Map", Modifier.weight(1f), onClick = onNavigateToHealthMap)
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
