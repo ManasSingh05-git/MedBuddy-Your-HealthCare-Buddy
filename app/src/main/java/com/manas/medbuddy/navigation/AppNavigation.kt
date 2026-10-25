@@ -31,6 +31,7 @@ import com.manas.medbuddy.screens.SleepReminderScreen
 import com.manas.medbuddy.screens.SleepTrackerScreen
 import com.manas.medbuddy.screens.SosSettingsScreen
 import com.manas.medbuddy.screens.SplashScreen
+import com.manas.medbuddy.screens.VaccinationManagerScreen
 import com.manas.medbuddy.screens.WaterIntakeScreen
 
 object Routes {
@@ -48,6 +49,7 @@ object Routes {
     const val ReportExplainer = "report_explainer"
     const val MedicalVault = "medical_vault"
     const val AllergyRegistry = "allergy_registry"
+    const val VaccinationManager = "vaccination_manager"
     const val Health = "health"
     const val Profile = "profile"
     const val Settings = "settings"
@@ -142,6 +144,7 @@ fun AppNavigation(
                 onNavigateToReportExplainer = { navController.navigate(Routes.ReportExplainer) },
                 onNavigateToMedicalVault = { navController.navigate(Routes.MedicalVault) },
                 onNavigateToAllergyRegistry = { navController.navigate(Routes.AllergyRegistry) },
+                onNavigateToVaccinationManager = { navController.navigate(Routes.VaccinationManager) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -150,6 +153,13 @@ fun AppNavigation(
                         launchSingleTop = true
                     }
                 }
+            )
+        }
+
+        // Vaccination Manager Screen
+        composable(Routes.VaccinationManager) {
+            VaccinationManagerScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
