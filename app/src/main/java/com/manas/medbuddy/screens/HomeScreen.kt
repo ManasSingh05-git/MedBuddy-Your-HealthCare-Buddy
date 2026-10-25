@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FolderSpecial
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
@@ -73,6 +74,7 @@ fun HomeScreen(
     onNavigateToSleepTracker: () -> Unit = {},
     onNavigateToPrescriptionScanner: () -> Unit = {},
     onNavigateToReportExplainer: () -> Unit = {},
+    onNavigateToMedicalVault: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -185,6 +187,15 @@ fun HomeScreen(
                     onClick = {
                         coroutineScope.launch { drawerState.close() }
                         onNavigateToSettings()
+                    }
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.FolderSpecial, contentDescription = "Medical Vault", tint = CyanPrimary) },
+                    label = { Text("Medical Records Vault 🔒", color = TextPrimary) },
+                    selected = false,
+                    onClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        onNavigateToMedicalVault()
                     }
                 )
                 NavigationDrawerItem(
@@ -362,12 +373,17 @@ fun HomeScreen(
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
-                    ActionCard("AI Rx Scanner 📷", Modifier.weight(1f), onClick = onNavigateToPrescriptionScanner)
+                    ActionCard("Medical Vault 🔒", Modifier.weight(1f), onClick = onNavigateToMedicalVault)
                 }
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ActionCard("AI Rx Scanner 📷", Modifier.weight(1f), onClick = onNavigateToPrescriptionScanner)
                     ActionCard("Report Explainer 📑", Modifier.weight(1f), onClick = onNavigateToReportExplainer)
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Sleep Tracker 🌙", Modifier.weight(1f), onClick = onNavigateToSleepTracker)
+                    ActionCard("Find Hospitals 🏥", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
                 }
 
                 // Medicines List

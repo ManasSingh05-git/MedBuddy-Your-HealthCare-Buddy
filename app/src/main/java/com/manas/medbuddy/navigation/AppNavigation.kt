@@ -17,6 +17,7 @@ import com.manas.medbuddy.screens.HomeScreen
 import com.manas.medbuddy.screens.HospitalDetailsScreen
 import com.manas.medbuddy.screens.HospitalFinderScreen
 import com.manas.medbuddy.screens.LoginScreen
+import com.manas.medbuddy.screens.MedicalVaultScreen
 import com.manas.medbuddy.screens.MedicineListScreen
 import com.manas.medbuddy.screens.MedicineReminderScreen
 import com.manas.medbuddy.screens.MedicineScreen
@@ -44,6 +45,7 @@ object Routes {
     const val MedicineReminder = "medicine_reminder"
     const val PrescriptionScanner = "prescription_scanner"
     const val ReportExplainer = "report_explainer"
+    const val MedicalVault = "medical_vault"
     const val Health = "health"
     const val Profile = "profile"
     const val Settings = "settings"
@@ -136,6 +138,7 @@ fun AppNavigation(
                 onNavigateToSleepTracker = { navController.navigate(Routes.SleepTracker) },
                 onNavigateToPrescriptionScanner = { navController.navigate(Routes.PrescriptionScanner) },
                 onNavigateToReportExplainer = { navController.navigate(Routes.ReportExplainer) },
+                onNavigateToMedicalVault = { navController.navigate(Routes.MedicalVault) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -144,6 +147,13 @@ fun AppNavigation(
                         launchSingleTop = true
                     }
                 }
+            )
+        }
+
+        // Medical Vault Screen
+        composable(Routes.MedicalVault) {
+            MedicalVaultScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
