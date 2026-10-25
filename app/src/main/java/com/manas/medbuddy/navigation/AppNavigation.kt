@@ -26,6 +26,7 @@ import com.manas.medbuddy.screens.SymptomJournalScreen
 import com.manas.medbuddy.screens.DoctorPrepScreen
 import com.manas.medbuddy.screens.MedicalGlossaryScreen
 import com.manas.medbuddy.screens.WellnessCoachScreen
+import com.manas.medbuddy.screens.ReportComparisonScreen
 import com.manas.medbuddy.screens.WaterIntakeScreen
 
 object Routes {
@@ -51,6 +52,7 @@ object Routes {
     const val DoctorPrep = "doctor_prep"
     const val MedicalGlossary = "medical_glossary"
     const val WellnessCoach = "wellness_coach"
+    const val ReportComparison = "report_comparison"
 }
 
 @Composable
@@ -137,6 +139,7 @@ fun AppNavigation(
                 onNavigateToDoctorPrep = { navController.navigate(Routes.DoctorPrep) },
                 onNavigateToMedicalGlossary = { navController.navigate(Routes.MedicalGlossary) },
                 onNavigateToWellnessCoach = { navController.navigate(Routes.WellnessCoach) },
+                onNavigateToReportComparison = { navController.navigate(Routes.ReportComparison) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -286,6 +289,12 @@ fun AppNavigation(
 
         composable(Routes.WellnessCoach) {
             WellnessCoachScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.ReportComparison) {
+            ReportComparisonScreen(
                 onBack = { navController.popBackStack() }
             )
         }

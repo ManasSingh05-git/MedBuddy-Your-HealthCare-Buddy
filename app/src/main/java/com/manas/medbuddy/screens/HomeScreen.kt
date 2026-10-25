@@ -115,6 +115,7 @@ fun HomeScreen(
     onNavigateToDoctorPrep: () -> Unit = {},
     onNavigateToMedicalGlossary: () -> Unit = {},
     onNavigateToWellnessCoach: () -> Unit = {},
+    onNavigateToReportComparison: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -494,7 +495,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 QuickActionPill("Wellness Coach", Modifier.weight(1f), onClick = onNavigateToWellnessCoach)
-                QuickActionPill("Hospital Finder", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
+                QuickActionPill("Report Compare", Modifier.weight(1f), onClick = onNavigateToReportComparison)
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
