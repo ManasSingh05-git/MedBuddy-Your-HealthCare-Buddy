@@ -22,6 +22,7 @@ import com.manas.medbuddy.screens.MedicineReminderScreen
 import com.manas.medbuddy.screens.MedicineScreen
 import com.manas.medbuddy.screens.PrescriptionScannerScreen
 import com.manas.medbuddy.screens.ProfileScreen
+import com.manas.medbuddy.screens.ReportExplainerScreen
 import com.manas.medbuddy.screens.SettingsScreen
 import com.manas.medbuddy.screens.SignupScreen
 import com.manas.medbuddy.screens.SleepReminderScreen
@@ -42,6 +43,7 @@ object Routes {
     const val AddMedicine = "add_medicine"
     const val MedicineReminder = "medicine_reminder"
     const val PrescriptionScanner = "prescription_scanner"
+    const val ReportExplainer = "report_explainer"
     const val Health = "health"
     const val Profile = "profile"
     const val Settings = "settings"
@@ -133,6 +135,7 @@ fun AppNavigation(
                 onNavigateToHealthMap = { navController.navigate(Routes.HealthMap) },
                 onNavigateToSleepTracker = { navController.navigate(Routes.SleepTracker) },
                 onNavigateToPrescriptionScanner = { navController.navigate(Routes.PrescriptionScanner) },
+                onNavigateToReportExplainer = { navController.navigate(Routes.ReportExplainer) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -199,6 +202,13 @@ fun AppNavigation(
             PrescriptionScannerScreen(
                 onBack = { navController.popBackStack() },
                 onNavigateToMedicineList = { navController.navigate(Routes.MedicineList) }
+            )
+        }
+
+        // Report Explainer Screen
+        composable(Routes.ReportExplainer) {
+            ReportExplainerScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 

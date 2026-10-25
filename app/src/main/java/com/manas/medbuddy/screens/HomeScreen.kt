@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DarkMode
@@ -71,6 +72,7 @@ fun HomeScreen(
     onNavigateToHealthMap: () -> Unit = {},
     onNavigateToSleepTracker: () -> Unit = {},
     onNavigateToPrescriptionScanner: () -> Unit = {},
+    onNavigateToReportExplainer: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -192,6 +194,15 @@ fun HomeScreen(
                     onClick = {
                         coroutineScope.launch { drawerState.close() }
                         onNavigateToPrescriptionScanner()
+                    }
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Analytics, contentDescription = "Lab Report Explainer", tint = CyanPrimary) },
+                    label = { Text("AI Medical Report Explainer", color = TextPrimary) },
+                    selected = false,
+                    onClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        onNavigateToReportExplainer()
                     }
                 )
                 NavigationDrawerItem(
@@ -355,8 +366,8 @@ fun HomeScreen(
                 }
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    ActionCard("Sleep Tracker", Modifier.weight(1f), onClick = onNavigateToSleepTracker)
-                    ActionCard("Find Hospitals", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
+                    ActionCard("Report Explainer 📑", Modifier.weight(1f), onClick = onNavigateToReportExplainer)
+                    ActionCard("Sleep Tracker 🌙", Modifier.weight(1f), onClick = onNavigateToSleepTracker)
                 }
 
                 // Medicines List
