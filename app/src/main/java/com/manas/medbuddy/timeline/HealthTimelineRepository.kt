@@ -134,7 +134,7 @@ class HealthTimelineRepository(private val context: Context? = null) {
                     eventDate = record.documentDate,
                     providerOrLocation = record.doctorName.ifBlank { "App Storage Vault" },
                     description = "Category: ${record.category} • Size: ${record.fileSizeFormatted}",
-                    targetRoute = Routes.MedicalVault,
+                    targetRoute = "medical_vault",
                     sourceRecordId = record.id
                 )
             )
@@ -153,7 +153,7 @@ class HealthTimelineRepository(private val context: Context? = null) {
                     eventDate = vac.date.ifBlank { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(vac.createdAtTimestamp)) },
                     providerOrLocation = vac.providerName.ifBlank { "Health Clinic" },
                     description = "Status: ${vac.status} • Certificate: ${if (vac.hasCertificate) "Attached" else "None"}",
-                    targetRoute = Routes.VaccinationManager,
+                    targetRoute = "vaccination_manager",
                     sourceRecordId = vac.id
                 )
             )
@@ -171,7 +171,7 @@ class HealthTimelineRepository(private val context: Context? = null) {
                     eventDate = med.startDate.ifBlank { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) },
                     providerOrLocation = med.instructions.ifBlank { "Prescribed Treatment" },
                     description = "Dosage: ${med.dosage} • Schedules: ${med.time}",
-                    targetRoute = "${Routes.AddEditMedicine}?medicineId=${med.id}",
+                    targetRoute = "add_edit_medicine?medicineId=${med.id}",
                     sourceRecordId = med.id
                 )
             )

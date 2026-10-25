@@ -39,7 +39,7 @@ class MedicalGlossaryTest {
             MedicalTerm(term = "CBC", simpleExplanation = "Complete Blood Count", contextualExample = "Example")
         )
 
-        val query = "blood"
+        val query = "pressure"
         val results = terms.filter {
             it.term.lowercase().contains(query) || it.simpleExplanation.lowercase().contains(query)
         }

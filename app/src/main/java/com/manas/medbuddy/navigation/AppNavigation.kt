@@ -41,6 +41,7 @@ object Routes {
     const val HospitalDetails = "hospital_details"
     const val HealthMap = "health_map"
     const val SleepTracker = "sleep_tracker"
+    const val SleepReminders = "sleep_reminders"
     const val WaterTracker = "water_tracker"
     const val AiInsights = "ai_insights"
 }
@@ -212,6 +213,9 @@ fun AppNavigation(
             SettingsScreen(
                 onNavigateToSosSettings = {
                     navController.navigate(Routes.SosSettings)
+                },
+                onNavigateToSleepReminders = {
+                    navController.navigate(Routes.SleepReminders)
                 },
                 onBack = {
                     navController.popBackStack()
