@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.FolderSpecial
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
@@ -83,6 +84,7 @@ fun HomeScreen(
     onNavigateToVaccinationManager: () -> Unit = {},
     onNavigateToHealthTimeline: () -> Unit = {},
     onNavigateToHealthCard: () -> Unit = {},
+    onNavigateToAppointmentOrganizer: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -195,6 +197,15 @@ fun HomeScreen(
                     onClick = {
                         coroutineScope.launch { drawerState.close() }
                         onNavigateToSettings()
+                    }
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Event, contentDescription = "Doctor Appointments", tint = CyanPrimary) },
+                    label = { Text("Doctor Appointments 🏥", color = TextPrimary) },
+                    selected = false,
+                    onClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        onNavigateToAppointmentOrganizer()
                     }
                 )
                 NavigationDrawerItem(
@@ -417,27 +428,27 @@ fun HomeScreen(
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
+                    ActionCard("Appointments 🏥", Modifier.weight(1f), onClick = onNavigateToAppointmentOrganizer)
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Health Card 💳", Modifier.weight(1f), onClick = onNavigateToHealthCard)
-                }
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Medical Timeline 📅", Modifier.weight(1f), onClick = onNavigateToHealthTimeline)
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Vaccination Records 💉", Modifier.weight(1f), onClick = onNavigateToVaccinationManager)
-                }
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Allergy Registry ⚠️", Modifier.weight(1f), onClick = onNavigateToAllergyRegistry)
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Medical Vault 🔒", Modifier.weight(1f), onClick = onNavigateToMedicalVault)
-                }
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("AI Rx Scanner 📷", Modifier.weight(1f), onClick = onNavigateToPrescriptionScanner)
-                    ActionCard("Report Explainer 📑", Modifier.weight(1f), onClick = onNavigateToReportExplainer)
                 }
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ActionCard("Report Explainer 📑", Modifier.weight(1f), onClick = onNavigateToReportExplainer)
                     ActionCard("Sleep Tracker 🌙", Modifier.weight(1f), onClick = onNavigateToSleepTracker)
-                    ActionCard("Find Hospitals 🏥", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
                 }
 
                 // Medicines List
