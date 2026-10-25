@@ -1,5 +1,6 @@
 package com.manas.medbuddy.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -35,6 +36,7 @@ import com.manas.medbuddy.ui.theme.*
 fun SettingsScreen(
     onNavigateToSosSettings: () -> Unit,
     onNavigateToSleepReminders: () -> Unit,
+    onNavigateToPersonalInformation: () -> Unit = {},
     onBack: () -> Unit,
     onLogout: () -> Unit
 ) {
@@ -66,7 +68,7 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // Account Info Card
-            GlassCard(modifier = Modifier.fillMaxWidth()) {
+            GlassCard(modifier = Modifier.fillMaxWidth().clickable { onNavigateToPersonalInformation() }) {
                 Row(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -79,9 +81,10 @@ fun SettingsScreen(
                         modifier = Modifier.size(36.dp)
                     )
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Signed in as", color = TextSecondary, fontSize = 12.sp)
-                        Text(userEmail, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text("Personal Information", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text("Signed in as $userEmail", color = TextSecondary, fontSize = 12.sp)
                     }
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = TextSecondary)
                 }
             }
 

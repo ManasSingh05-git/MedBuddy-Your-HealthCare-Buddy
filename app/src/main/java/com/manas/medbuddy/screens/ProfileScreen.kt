@@ -140,7 +140,7 @@ fun ProfileScreen(
 
             // Menu Items List
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                ProfileOptionRow("Personal Information", Icons.Default.Person, CyanPrimary) { }
+                ProfileOptionRow("Personal Information", Icons.Default.Person, CyanPrimary) { onNavigateToRoute("personal_information") }
                 ProfileOptionRow("Health Card", Icons.Default.CreditCard, EmeraldPrimary) { onNavigateToRoute("health_card") }
                 ProfileOptionRow("Family Profiles", Icons.Default.FamilyRestroom, CyanPrimary) { onNavigateToRoute("family_profiles") }
                 ProfileOptionRow("Allergies", Icons.Default.Shield, SOSRed) { onNavigateToRoute("allergy_registry") }

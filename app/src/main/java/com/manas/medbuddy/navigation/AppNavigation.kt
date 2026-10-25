@@ -36,6 +36,7 @@ import com.manas.medbuddy.screens.MedicineReminderScreen
 import com.manas.medbuddy.screens.MedicineScreen
 import com.manas.medbuddy.screens.MenstrualTrackerScreen
 import com.manas.medbuddy.screens.MovementCoachScreen
+import com.manas.medbuddy.screens.PersonalInformationScreen
 import com.manas.medbuddy.screens.PrescriptionScannerScreen
 import com.manas.medbuddy.screens.ProfileScreen
 import com.manas.medbuddy.screens.ReportComparisonScreen
@@ -79,6 +80,7 @@ object Routes {
     const val HealthCard = "health_card"
     const val Health = "health"
     const val Profile = "profile"
+    const val PersonalInformation = "personal_information"
     const val Settings = "settings"
     const val SosSettings = "sos_settings"
     const val HospitalFinder = "hospital_finder"
@@ -297,12 +299,20 @@ fun AppNavigation(
             SettingsScreen(
                 onNavigateToSosSettings = { navController.navigate(Routes.SosSettings) },
                 onNavigateToSleepReminders = { navController.navigate(Routes.SleepReminders) },
+                onNavigateToPersonalInformation = { navController.navigate(Routes.PersonalInformation) },
                 onBack = { navController.popBackStack() },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) { inclusive = true }
                     }
                 }
+            )
+        }
+
+        // Personal Information Screen
+        composable(Routes.PersonalInformation) {
+            PersonalInformationScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
