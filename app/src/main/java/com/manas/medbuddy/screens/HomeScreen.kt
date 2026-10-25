@@ -122,6 +122,7 @@ fun HomeScreen(
     onNavigateToAdherenceReports: () -> Unit = {},
     onNavigateToDocumentSharing: () -> Unit = {},
     onNavigateToMenstrualTracker: () -> Unit = {},
+    onNavigateToMovementCoach: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -521,14 +522,20 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                QuickActionPill("Document Sharing", Modifier.weight(1f), onClick = onNavigateToDocumentSharing)
                 QuickActionPill("Menstrual Tracker", Modifier.weight(1f), onClick = onNavigateToMenstrualTracker)
+                QuickActionPill("Movement Coach", Modifier.weight(1f), onClick = onNavigateToMovementCoach)
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                QuickActionPill("Document Sharing", Modifier.weight(1f), onClick = onNavigateToDocumentSharing)
                 QuickActionPill("Hospital Finder", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 QuickActionPill("SOS Contacts", Modifier.weight(1f), onClick = onNavigateToSosSettings)
             }
 
