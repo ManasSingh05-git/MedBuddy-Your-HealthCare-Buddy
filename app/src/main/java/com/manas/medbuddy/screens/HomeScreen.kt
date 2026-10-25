@@ -29,14 +29,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -48,16 +48,12 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,6 +65,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -83,23 +80,22 @@ import com.manas.medbuddy.data.model.HospitalSearchResult
 import com.manas.medbuddy.data.repository.EmergencyContactRepository
 import com.manas.medbuddy.data.repository.HospitalRepository
 import com.manas.medbuddy.model.Medicine
+import com.manas.medbuddy.ui.components.AnimatedProgressRing
+import com.manas.medbuddy.ui.components.BottomNavigationBar
 import com.manas.medbuddy.ui.components.GlassCard
+import com.manas.medbuddy.ui.components.MedBuddyMascot
 import com.manas.medbuddy.ui.components.SectionHeader
 import com.manas.medbuddy.ui.theme.BlueGradient
 import com.manas.medbuddy.ui.theme.CyanPrimary
 import com.manas.medbuddy.ui.theme.DarkBackground
 import com.manas.medbuddy.ui.theme.DarkSurface
 import com.manas.medbuddy.ui.theme.EmeraldPrimary
-import com.manas.medbuddy.ui.theme.MintAccent
 import com.manas.medbuddy.ui.theme.SOSRed
 import com.manas.medbuddy.ui.theme.TextPrimaryDark as TextPrimary
 import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
 import com.manas.medbuddy.util.EmergencyCallHelper
 import com.manas.medbuddy.util.SosTapDetector
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -148,16 +144,16 @@ fun HomeScreen(
         null
     }
     val userEmail = try {
-        FirebaseAuth.getInstance().currentUser?.email ?: "Manas !"
+        FirebaseAuth.getInstance().currentUser?.email ?: "Manas 👋"
     } catch (_: Exception) {
-        "Manas !"
+        "Manas 👋"
     }
-    val userName = if (userEmail.contains("@")) userEmail.substringBefore("@") else userEmail
+    val userName = if (userEmail.contains("@")) userEmail.substringBefore("@") + " 👋" else userEmail
 
     var medicines by remember { mutableStateOf<List<Medicine>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
 
-    // Dialog states for SOS actions
+    // Dialog states for SOS
     var showSingleTapDialog by remember { mutableStateOf(false) }
     var showNoContactDialog by remember { mutableStateOf(false) }
     var showSearchingHospitalDialog by remember { mutableStateOf(false) }
@@ -217,18 +213,6 @@ fun HomeScreen(
         )
     }
 
-    // Pulse animation for SOS
-    val infiniteTransition = rememberInfiniteTransition(label = "sosPulse")
-    val sosPulseScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.08f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "sosScale"
-    )
-
     DisposableEffect(userId) {
         if (userId == null) {
             loading = false
@@ -254,88 +238,20 @@ fun HomeScreen(
         }
     }
 
-    val currentDateStr = remember {
-        SimpleDateFormat("EEE, dd MMM yyyy", Locale.US).format(Date())
-    }
-
     Scaffold(
         containerColor = DarkBackground,
-        floatingActionButton = {
-            // Central Add / SOS Action
-            FloatingActionButton(
-                onClick = { sosTapDetector.registerTap() },
-                containerColor = SOSRed,
-                contentColor = Color.White,
-                shape = CircleShape,
-                modifier = Modifier
-                    .scale(sosPulseScale)
-                    .size(58.dp),
-                elevation = FloatingActionButtonDefaults.elevation(8.dp)
-            ) {
-                Icon(Icons.Default.Warning, contentDescription = "SOS Emergency", modifier = Modifier.size(28.dp))
-            }
-        },
-        floatingActionButtonPosition = FabPosition.Center,
         bottomBar = {
-            NavigationBar(
-                containerColor = DarkSurface.copy(alpha = 0.95f),
-                contentColor = CyanPrimary,
-                tonalElevation = 8.dp
-            ) {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home", fontSize = 11.sp) },
-                    selected = true,
-                    onClick = { },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = EmeraldPrimary,
-                        selectedTextColor = EmeraldPrimary,
-                        unselectedIconColor = TextSecondary,
-                        unselectedTextColor = TextSecondary,
-                        indicatorColor = Color.Transparent
-                    )
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Medication, contentDescription = "Medicine") },
-                    label = { Text("Medicine", fontSize = 11.sp) },
-                    selected = false,
-                    onClick = onNavigateToMedicines,
-                    colors = NavigationBarItemDefaults.colors(
-                        unselectedIconColor = TextSecondary,
-                        unselectedTextColor = TextSecondary
-                    )
-                )
-                
-                // Placeholder for central FAB spacing
-                NavigationBarItem(
-                    icon = { Box(modifier = Modifier.size(24.dp)) },
-                    label = { Text("", fontSize = 11.sp) },
-                    selected = false,
-                    onClick = { },
-                    enabled = false
-                )
-
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.ShowChart, contentDescription = "Health") },
-                    label = { Text("Health", fontSize = 11.sp) },
-                    selected = false,
-                    onClick = onNavigateToHealth,
-                    colors = NavigationBarItemDefaults.colors(
-                        unselectedIconColor = TextSecondary,
-                        unselectedTextColor = TextSecondary
-                    )
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                    label = { Text("Profile", fontSize = 11.sp) },
-                    selected = false,
-                    onClick = onNavigateToSettings,
-                    colors = NavigationBarItemDefaults.colors(
-                        unselectedIconColor = TextSecondary,
-                        unselectedTextColor = TextSecondary
-                    )
-                )
-            }
+            BottomNavigationBar(
+                selectedTab = "home",
+                onTabSelected = { tab ->
+                    when (tab) {
+                        "tools" -> onNavigateToMedicines()
+                        "assistant" -> onNavigateToReportExplainer()
+                        "insights" -> onNavigateToHealth()
+                        "profile" -> onNavigateToSettings()
+                    }
+                }
+            )
         }
     ) { paddingValues ->
         Column(
@@ -344,43 +260,21 @@ fun HomeScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            // Header: Greeting + Avatar
+            // Header: Avatar + Greeting + Bell Icon
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text("Good Morning", color = TextSecondary, fontSize = 14.sp)
-                    Text(
-                        text = "$userName !",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-                    Text(currentDateStr, color = TextSecondary, fontSize = 12.sp)
-                }
-
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    IconButton(
-                        onClick = { },
-                        modifier = Modifier
-                            .size(42.dp)
-                            .clip(CircleShape)
-                            .background(DarkSurface)
-                    ) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = TextPrimary)
-                    }
-
-                    // Avatar Circle
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(46.dp)
                             .clip(CircleShape)
                             .background(Brush.linearGradient(listOf(EmeraldPrimary, CyanPrimary)))
                             .padding(2.dp)
@@ -391,225 +285,224 @@ fun HomeScreen(
                     ) {
                         Icon(Icons.Default.Person, contentDescription = "Profile", tint = CyanPrimary)
                     }
+
+                    Column {
+                        Text("Good Morning,", color = TextSecondary, fontSize = 13.sp)
+                        Text(
+                            text = userName,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                    }
+                }
+
+                IconButton(
+                    onClick = { },
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(DarkSurface)
+                ) {
+                    Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = TextPrimary)
                 }
             }
 
-            // Top Banner Card
-            Surface(
+            // Health Score Card with MedBuddy Mascot
+            GlassCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(22.dp),
-                color = Color.Transparent
+                shape = RoundedCornerShape(24.dp)
             ) {
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color(0xFF003828),
-                                    Color(0xFF004D40),
-                                    Color(0xFF005F73)
-                                )
-                            )
-                        )
-                        .padding(20.dp)
+                        .padding(20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        Text("Your Health Score", color = TextSecondary, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
-                            Text(
-                                "Take your medicine\non time, stay healthy!",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                lineHeight = 24.sp
-                            )
-                        }
-                        Text("🌿💊", fontSize = 38.sp)
-                    }
-                }
-            }
+                            Box(
+                                modifier = Modifier.size(72.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                AnimatedProgressRing(
+                                    progress = 0.86f,
+                                    modifier = Modifier.size(72.dp),
+                                    colors = listOf(EmeraldPrimary, CyanPrimary),
+                                    strokeWidth = 10f
+                                )
+                                Text("86", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = TextPrimary)
+                            }
 
-            // Today's Medicines Section
-            SectionHeader(
-                title = "Today's Medicines",
-                actionText = "View All",
-                onActionClick = onNavigateToMedicines
-            )
-
-            // Sample / Scheduled Medicines Checklist
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                if (loading) {
-                    CircularProgressIndicator(color = CyanPrimary, modifier = Modifier.align(Alignment.CenterHorizontally))
-                } else if (medicines.isEmpty()) {
-                    // Pre-populated default list matching reference image
-                    TodayMedicineRow("Paracetamol", "500 mg", "09:00 AM", isTaken = true)
-                    TodayMedicineRow("Vitamin D3", "1000 IU", "01:00 PM", isTaken = false)
-                    TodayMedicineRow("BP Tablet", "10 mg", "09:00 PM", isTaken = false)
-                } else {
-                    medicines.take(3).forEachIndexed { index, med ->
-                        TodayMedicineRow(
-                            name = med.name,
-                            dosage = med.dosage,
-                            time = med.time,
-                            isTaken = index == 0
-                        )
-                    }
-                }
-            }
-
-            // Metrics Grid (3 Stat Cards side by side)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                DashboardMetricCard(
-                    icon = "👟",
-                    label = "Steps",
-                    value = "5,420",
-                    modifier = Modifier.weight(1f),
-                    onClick = onNavigateToHealth
-                )
-                DashboardMetricCard(
-                    icon = "💧",
-                    label = "Water",
-                    value = "1.8 L",
-                    modifier = Modifier.weight(1f),
-                    onClick = onNavigateToHealth
-                )
-                DashboardMetricCard(
-                    icon = "🔥",
-                    label = "Calories",
-                    value = "320 kcal",
-                    modifier = Modifier.weight(1f),
-                    onClick = onNavigateToHealth
-                )
-            }
-
-            // Quick Navigation Shortcuts
-            SectionHeader(title = "Core Features")
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                QuickActionPill("Health Timeline", Modifier.weight(1f), onClick = onNavigateToHealthTimeline)
-                QuickActionPill("Health Card", Modifier.weight(1f), onClick = onNavigateToHealthCard)
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                QuickActionPill("Vaccines", Modifier.weight(1f), onClick = onNavigateToVaccinationManager)
-                QuickActionPill("Allergies", Modifier.weight(1f), onClick = onNavigateToAllergyRegistry)
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                QuickActionPill("Medical Vault", Modifier.weight(1f), onClick = onNavigateToMedicalVault)
-                QuickActionPill("Rx Scanner", Modifier.weight(1f), onClick = onNavigateToPrescriptionScanner)
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                QuickActionPill("Reports", Modifier.weight(1f), onClick = onNavigateToReportExplainer)
-                QuickActionPill("Appointments", Modifier.weight(1f), onClick = onNavigateToAppointmentOrganizer)
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                QuickActionPill("Sleep Tracker", Modifier.weight(1f), onClick = onNavigateToSleepTracker)
-                QuickActionPill("Hospital Finder", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                QuickActionPill("Health Map", Modifier.weight(1f), onClick = onNavigateToHealthMap)
-                QuickActionPill("SOS Contacts", Modifier.weight(1f), onClick = onNavigateToSosSettings)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            SectionHeader(title = "More Tools")
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                QuickActionPill("Symptom Journal", Modifier.weight(1f), onClick = onNavigateToSymptomJournal)
-                QuickActionPill("Doctor Prep", Modifier.weight(1f), onClick = onNavigateToDoctorPrep)
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                QuickActionPill("Medical Glossary", Modifier.weight(1f), onClick = onNavigateToMedicalGlossary)
-                QuickActionPill("Wellness Coach", Modifier.weight(1f), onClick = onNavigateToWellnessCoach)
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                QuickActionPill("Report Compare", Modifier.weight(1f), onClick = onNavigateToReportComparison)
-                QuickActionPill("Family Profiles", Modifier.weight(1f), onClick = onNavigateToFamilyProfiles)
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                QuickActionPill("Caregiver Dash", Modifier.weight(1f), onClick = onNavigateToCaregiverDashboard)
-                QuickActionPill("Family Calendar", Modifier.weight(1f), onClick = onNavigateToFamilyCalendar)
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                QuickActionPill("Adherence Reports", Modifier.weight(1f), onClick = onNavigateToAdherenceReports)
-                QuickActionPill("Document Sharing", Modifier.weight(1f), onClick = onNavigateToDocumentSharing)
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                QuickActionPill("Menstrual Tracker", Modifier.weight(1f), onClick = onNavigateToMenstrualTracker)
-                QuickActionPill("Movement Coach", Modifier.weight(1f), onClick = onNavigateToMovementCoach)
-            }
-
-            Spacer(modifier = Modifier.height(48.dp))
-        }
-    }
-
-    // 1. Single Tap Confirmation Dialog
-    if (showSingleTapDialog) {
-        val primaryContact = contactRepo.getPrimaryContact()
-        if (primaryContact != null) {
-            AlertDialog(
-                onDismissRequest = { showSingleTapDialog = false },
-                containerColor = DarkSurface,
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(Icons.Default.Phone, contentDescription = null, tint = SOSRed)
-                        Text("Confirm Emergency Call", color = TextPrimary, fontWeight = FontWeight.Bold)
-                    }
-                },
-                text = {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Initiate call to your primary emergency contact?", color = TextSecondary)
-                        GlassCard(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text(primaryContact.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                                Text(primaryContact.phoneNumber, color = CyanPrimary, fontSize = 16.sp)
-                                if (primaryContact.relationship.isNotBlank()) {
-                                    Text("Relationship: ${primaryContact.relationship}", color = TextSecondary, fontSize = 12.sp)
-                                }
+                            Column {
+                                Text("Great!", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = EmeraldPrimary)
+                                Text("Keep it up", fontSize = 13.sp, color = TextSecondary)
                             }
                         }
                     }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            showSingleTapDialog = false
-                            EmergencyCallHelper.initiateCall(context, primaryContact.phoneNumber)
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = SOSRed, contentColor = Color.White)
-                    ) {
-                        Text("Call Now", fontWeight = FontWeight.Bold)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showSingleTapDialog = false }) {
-                        Text("Cancel", color = TextSecondary)
-                    }
+
+                    MedBuddyMascot(size = 85.dp)
                 }
-            )
+            }
+
+            // 4 Grid Stat Cards (Steps, Sleep, Calories, Water)
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    DashboardGridStatCard(
+                        icon = "👟",
+                        title = "Steps",
+                        value = "5,420",
+                        sublabel = "70% of goal",
+                        accentColor = EmeraldPrimary,
+                        modifier = Modifier.weight(1f),
+                        onClick = onNavigateToHealth
+                    )
+                    DashboardGridStatCard(
+                        icon = "🌙",
+                        title = "Sleep",
+                        value = "7h 40m",
+                        sublabel = "Good",
+                        accentColor = CyanPrimary,
+                        modifier = Modifier.weight(1f),
+                        onClick = onNavigateToSleepTracker
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    DashboardGridStatCard(
+                        icon = "🔥",
+                        title = "Calories",
+                        value = "320 kcal",
+                        sublabel = "Today",
+                        accentColor = SOSRed,
+                        modifier = Modifier.weight(1f),
+                        onClick = onNavigateToHealth
+                    )
+                    DashboardGridStatCard(
+                        icon = "💧",
+                        title = "Water",
+                        value = "1.8 L",
+                        sublabel = "60% of goal",
+                        accentColor = CyanPrimary,
+                        modifier = Modifier.weight(1f),
+                        onClick = onNavigateToHealth
+                    )
+                }
+            }
+
+            // Quick Health Insight Banner
+            GlassCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onNavigateToSleepTracker() },
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(Brush.linearGradient(listOf(BlueGradient.copy(alpha = 0.3f), CyanPrimary.copy(alpha = 0.3f)))),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("✨", fontSize = 20.sp)
+                    }
+
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text("Quick Health Insight ✨", color = CyanPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text(
+                            "Your sleep improved by 20% this week. Keep a consistent sleep schedule!",
+                            color = TextPrimary,
+                            fontSize = 12.sp,
+                            lineHeight = 17.sp
+                        )
+                    }
+
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = CyanPrimary, modifier = Modifier.size(18.dp))
+                }
+            }
+
+            // Quick Actions Row (Medicines, Appointments, Health Map, SOS)
+            SectionHeader(title = "Quick Actions")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                ActionTile("Medicines", Icons.Default.Medication, EmeraldPrimary, Modifier.weight(1f), onClick = onNavigateToMedicines)
+                ActionTile("Appointments", Icons.Default.CalendarMonth, CyanPrimary, Modifier.weight(1f), onClick = onNavigateToAppointmentOrganizer)
+                ActionTile("Health Map", Icons.Default.LocationOn, BlueGradient, Modifier.weight(1f), onClick = onNavigateToHealthMap)
+                ActionTile("SOS", Icons.Default.Warning, SOSRed, Modifier.weight(1f), onClick = { sosTapDetector.registerTap() })
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 
-    // 2. No Primary Contact Dialog
+    // Single Tap Confirmation Dialog
+    if (showSingleTapDialog) {
+        val primary = contactRepo.getPrimaryContact()
+        AlertDialog(
+            onDismissRequest = { showSingleTapDialog = false },
+            containerColor = DarkSurface,
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(Icons.Default.Phone, contentDescription = null, tint = SOSRed)
+                    Text("Confirm Emergency Call", color = TextPrimary, fontWeight = FontWeight.Bold)
+                }
+            },
+            text = {
+                Text(
+                    "Initiate emergency call to '${primary?.name ?: "Contact"}' (${primary?.phoneNumber ?: ""})?",
+                    color = TextSecondary
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showSingleTapDialog = false
+                        if (primary != null) {
+                            EmergencyCallHelper.initiateCall(context, primary.phoneNumber)
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = SOSRed, contentColor = Color.White)
+                ) {
+                    Text("Call Now", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSingleTapDialog = false }) {
+                    Text("Cancel", color = TextSecondary)
+                }
+            }
+        )
+    }
+
+    // No Contact Dialog
     if (showNoContactDialog) {
         AlertDialog(
             onDismissRequest = { showNoContactDialog = false },
             containerColor = DarkSurface,
             title = { Text("No Primary Contact Set", color = TextPrimary, fontWeight = FontWeight.Bold) },
-            text = {
-                Text(
-                    "You haven't added a primary emergency contact yet. Please configure your emergency contacts in settings.",
-                    color = TextSecondary
-                )
-            },
+            text = { Text("No primary emergency contact configured. Would you like to add one in settings?", color = TextSecondary) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -618,7 +511,7 @@ fun HomeScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = CyanPrimary, contentColor = Color.Black)
                 ) {
-                    Text("Configure SOS Settings", fontWeight = FontWeight.Bold)
+                    Text("Configure SOS", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -629,27 +522,23 @@ fun HomeScreen(
         )
     }
 
-    // 3. Searching Nearest Hospital Progress Dialog
+    // Searching Hospital Dialog
     if (showSearchingHospitalDialog) {
         AlertDialog(
             onDismissRequest = { },
             containerColor = DarkSurface,
             title = { Text("Locating Nearest Hospital...", color = TextPrimary, fontWeight = FontWeight.Bold) },
             text = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.padding(vertical = 8.dp)
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     CircularProgressIndicator(color = CyanPrimary)
-                    Text("Fetching location and finding nearest hospital with phone number...", color = TextSecondary, fontSize = 14.sp)
+                    Text("Finding nearest hospital with emergency contact...", color = TextSecondary, fontSize = 14.sp)
                 }
             },
             confirmButton = { }
         )
     }
 
-    // 4. Hospital Search Result Dialog
+    // Search Result Dialog
     hospitalSearchResult?.let { result ->
         when (result) {
             is HospitalSearchResult.Success -> {
@@ -657,34 +546,17 @@ fun HomeScreen(
                 AlertDialog(
                     onDismissRequest = { hospitalSearchResult = null },
                     containerColor = DarkSurface,
-                    title = {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Icon(Icons.Default.Warning, contentDescription = null, tint = SOSRed)
-                            Text("Nearest Hospital Found", color = TextPrimary, fontWeight = FontWeight.Bold)
-                        }
-                    },
-                    text = {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("Triple tap detected. Closest hospital:", color = TextSecondary)
-                            GlassCard(modifier = Modifier.fillMaxWidth()) {
-                                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Text(hospital.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                                    Text("Distance: ${hospital.getFormattedDistance()}", color = CyanPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                                    Text("Phone: ${hospital.phoneNumber}", color = TextPrimary, fontSize = 15.sp)
-                                }
-                            }
-                            Text("Do you want to call this hospital now?", color = TextSecondary, fontSize = 13.sp)
-                        }
-                    },
+                    title = { Text("Nearest Hospital Found", color = TextPrimary, fontWeight = FontWeight.Bold) },
+                    text = { Text("${hospital.name}\n${hospital.address}\nPhone: ${hospital.phoneNumber}", color = TextSecondary) },
                     confirmButton = {
                         Button(
                             onClick = {
                                 hospitalSearchResult = null
                                 EmergencyCallHelper.initiateCall(context, hospital.phoneNumber)
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = SOSRed, contentColor = Color.White)
+                            colors = ButtonDefaults.buttonColors(containerColor = SOSRed)
                         ) {
-                            Text("Call Hospital", fontWeight = FontWeight.Bold)
+                            Text("Call Hospital")
                         }
                     },
                     dismissButton = {
@@ -694,28 +566,12 @@ fun HomeScreen(
                     }
                 )
             }
-            HospitalSearchResult.PermissionDenied -> {
-                AlertDialog(
-                    onDismissRequest = { hospitalSearchResult = null },
-                    containerColor = DarkSurface,
-                    title = { Text("Location Permission Required", color = TextPrimary, fontWeight = FontWeight.Bold) },
-                    text = { Text("Location permission is required to search for nearest hospitals.", color = TextSecondary) },
-                    confirmButton = {
-                        Button(
-                            onClick = { hospitalSearchResult = null },
-                            colors = ButtonDefaults.buttonColors(containerColor = CyanPrimary, contentColor = Color.Black)
-                        ) {
-                            Text("OK")
-                        }
-                    }
-                )
-            }
             else -> {
                 AlertDialog(
                     onDismissRequest = { hospitalSearchResult = null },
                     containerColor = DarkSurface,
-                    title = { Text("Hospital Search Result", color = TextPrimary, fontWeight = FontWeight.Bold) },
-                    text = { Text("Could not locate hospital or phone number. Please call 112.", color = TextSecondary) },
+                    title = { Text("Hospital Search Failed", color = TextPrimary, fontWeight = FontWeight.Bold) },
+                    text = { Text("Unable to locate nearby hospital. Call 112 directly if urgent.", color = TextSecondary) },
                     confirmButton = {
                         Button(
                             onClick = { hospitalSearchResult = null },
@@ -731,66 +587,38 @@ fun HomeScreen(
 }
 
 @Composable
-private fun TodayMedicineRow(
-    name: String,
-    dosage: String,
-    time: String,
-    isTaken: Boolean
+private fun DashboardGridStatCard(
+    icon: String,
+    title: String,
+    value: String,
+    sublabel: String,
+    accentColor: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
-    var takenState by remember { mutableStateOf(isTaken) }
-
-    GlassCard(modifier = Modifier.fillMaxWidth()) {
-        Row(
+    GlassCard(modifier = modifier.clickable { onClick() }) {
+        Column(
             modifier = Modifier.padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (takenState) Color(0xFF00E676).copy(alpha = 0.2f)
-                        else Color(0xFF2979FF).copy(alpha = 0.2f)
-                    ),
-                contentAlignment = Alignment.Center
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text(if (takenState) "💊" else "💊", fontSize = 18.sp)
+                Text(icon, fontSize = 18.sp)
+                Text(title, color = TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
             }
-
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(name, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
-                Text(dosage, color = TextSecondary, fontSize = 13.sp)
-            }
-
-            Text(time, color = CyanPrimary, fontWeight = FontWeight.Medium, fontSize = 13.sp)
-
-            Box(
-                modifier = Modifier
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(if (takenState) EmeraldPrimary else Color.Transparent)
-                    .border(
-                        width = 2.dp,
-                        color = if (takenState) EmeraldPrimary else TextSecondary,
-                        shape = CircleShape
-                    )
-                    .clickable { takenState = !takenState },
-                contentAlignment = Alignment.Center
-            ) {
-                if (takenState) {
-                    Icon(Icons.Default.Check, contentDescription = "Taken", tint = Color.Black, modifier = Modifier.size(16.dp))
-                }
-            }
+            Text(value, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = TextPrimary)
+            Text(sublabel, color = accentColor, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
         }
     }
 }
 
 @Composable
-private fun DashboardMetricCard(
-    icon: String,
+private fun ActionTile(
     label: String,
-    value: String,
+    icon: ImageVector,
+    iconTint: Color,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -798,34 +626,18 @@ private fun DashboardMetricCard(
         Column(
             modifier = Modifier.padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text(icon, fontSize = 20.sp)
-            Text(label, color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Medium)
-            Text(value, color = TextPrimary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-@Composable
-private fun QuickActionPill(
-    title: String,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = modifier,
-        onClick = onClick,
-        color = Color.Transparent,
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .background(Brush.linearGradient(listOf(BlueGradient.copy(alpha = 0.2f), CyanPrimary.copy(alpha = 0.2f))))
-                .padding(14.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(title, fontWeight = FontWeight.SemiBold, color = TextPrimary, fontSize = 13.sp)
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(DarkSurface),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, contentDescription = label, tint = iconTint, modifier = Modifier.size(20.dp))
+            }
+            Text(label, color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         }
     }
 }

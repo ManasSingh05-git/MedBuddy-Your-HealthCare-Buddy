@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,21 +19,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.FamilyRestroom
-import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.TrackChanges
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -49,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
+import com.manas.medbuddy.ui.components.BottomNavigationBar
 import com.manas.medbuddy.ui.components.GlassCard
 import com.manas.medbuddy.ui.theme.CyanPrimary
 import com.manas.medbuddy.ui.theme.DarkBackground
@@ -62,32 +59,41 @@ import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
 @Composable
 fun ProfileScreen(
     onBack: () -> Unit = {},
+    onNavigateToRoute: (String) -> Unit = {},
     onNavigateToSosSettings: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
+    onTabSelected: (String) -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val userEmail = try {
-        FirebaseAuth.getInstance().currentUser?.email ?: "manas@gmail.com"
+        FirebaseAuth.getInstance().currentUser?.email ?: "manas.singh@nmims.edu"
     } catch (_: Exception) {
-        "manas@gmail.com"
+        "manas.singh@nmims.edu"
     }
-    val userName = if (userEmail.contains("@")) {
-        userEmail.substringBefore("@").replaceFirstChar { it.uppercase() } + " Singh"
-    } else {
-        "Manas Singh"
-    }
+    val userName = "Manas Singh"
 
     Scaffold(
         containerColor = DarkBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Profile", color = TextPrimary, fontWeight = FontWeight.Bold) },
+                title = { Text("Profile", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 22.sp) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
                     }
                 },
+                actions = {
+                    IconButton(onClick = { onNavigateToRoute("settings") }) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings", tint = TextPrimary)
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkSurface)
+            )
+        },
+        bottomBar = {
+            BottomNavigationBar(
+                selectedTab = "profile",
+                onTabSelected = onTabSelected
             )
         }
     ) { paddingValues ->
@@ -100,67 +106,46 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Profile Header Card
+            // Profile Card
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier.padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    // Avatar Circle
                     Box(
                         modifier = Modifier
                             .size(80.dp)
                             .clip(CircleShape)
-                            .background(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(EmeraldPrimary, CyanPrimary)
-                                )
-                            )
+                            .background(Brush.linearGradient(listOf(EmeraldPrimary, CyanPrimary)))
                             .padding(3.dp)
                             .clip(CircleShape)
                             .background(DarkSurface),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Profile Avatar",
-                            tint = CyanPrimary,
-                            modifier = Modifier.size(44.dp)
-                        )
+                        Icon(Icons.Default.Person, contentDescription = null, tint = CyanPrimary, modifier = Modifier.size(44.dp))
                     }
 
                     Text(userName, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                     Text(userEmail, color = TextSecondary, fontSize = 13.sp)
 
-                    // Edit Button
-                    Surface(
+                    OutlinedButton(
                         onClick = { },
-                        shape = RoundedCornerShape(20.dp),
-                        color = DarkSurface
+                        shape = RoundedCornerShape(18.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = CyanPrimary, modifier = Modifier.size(14.dp))
-                            Text("Edit", color = CyanPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                        }
+                        Text("Edit Profile", color = CyanPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
 
-            // Menu Options List
+            // Menu Items List
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                ProfileMenuItem("Personal Information", Icons.Default.Person, CyanPrimary) { }
-                ProfileMenuItem("Health Goals", Icons.Default.TrackChanges, EmeraldPrimary) { }
-                ProfileMenuItem("Family Members", Icons.Default.FamilyRestroom, CyanPrimary) { }
-                ProfileMenuItem("Emergency Contacts", Icons.Default.Warning, SOSRed, onClick = onNavigateToSosSettings)
-                ProfileMenuItem("App Settings", Icons.Default.Settings, TextPrimary, onClick = onNavigateToSettings)
-                ProfileMenuItem("Notifications", Icons.Default.Notifications, CyanPrimary) { }
-                ProfileMenuItem("Privacy & Security", Icons.Default.Lock, EmeraldPrimary) { }
-                ProfileMenuItem("Help & Support", Icons.Default.HelpOutline, TextSecondary) { }
+                ProfileOptionRow("Personal Information", Icons.Default.Person, CyanPrimary) { }
+                ProfileOptionRow("Health Card", Icons.Default.CreditCard, EmeraldPrimary) { onNavigateToRoute("health_card") }
+                ProfileOptionRow("Family Profiles", Icons.Default.FamilyRestroom, CyanPrimary) { onNavigateToRoute("family_profiles") }
+                ProfileOptionRow("Allergies", Icons.Default.Shield, SOSRed) { onNavigateToRoute("allergy_registry") }
+                ProfileOptionRow("Preferences", Icons.Default.Settings, TextPrimary) { onNavigateToRoute("settings") }
+                ProfileOptionRow("Privacy & Security", Icons.Default.Lock, EmeraldPrimary) { }
 
                 // Logout Option
                 GlassCard(
@@ -182,23 +167,19 @@ fun ProfileScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
-private fun ProfileMenuItem(
+private fun ProfileOptionRow(
     title: String,
     icon: ImageVector,
     iconTint: Color,
     onClick: () -> Unit
 ) {
-    GlassCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-    ) {
+    GlassCard(modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
