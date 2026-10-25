@@ -12,6 +12,7 @@ import com.manas.medbuddy.screens.AddMedicineScreen
 import com.manas.medbuddy.screens.AiHealthInsightsScreen
 import com.manas.medbuddy.screens.AllergyRegistryScreen
 import com.manas.medbuddy.screens.ForgotPasswordScreen
+import com.manas.medbuddy.screens.HealthCardScreen
 import com.manas.medbuddy.screens.HealthMapScreen
 import com.manas.medbuddy.screens.HealthScreen
 import com.manas.medbuddy.screens.HealthTimelineScreen
@@ -52,6 +53,7 @@ object Routes {
     const val AllergyRegistry = "allergy_registry"
     const val VaccinationManager = "vaccination_manager"
     const val HealthTimeline = "health_timeline"
+    const val HealthCard = "health_card"
     const val Health = "health"
     const val Profile = "profile"
     const val Settings = "settings"
@@ -148,6 +150,7 @@ fun AppNavigation(
                 onNavigateToAllergyRegistry = { navController.navigate(Routes.AllergyRegistry) },
                 onNavigateToVaccinationManager = { navController.navigate(Routes.VaccinationManager) },
                 onNavigateToHealthTimeline = { navController.navigate(Routes.HealthTimeline) },
+                onNavigateToHealthCard = { navController.navigate(Routes.HealthCard) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -156,6 +159,13 @@ fun AppNavigation(
                         launchSingleTop = true
                     }
                 }
+            )
+        }
+
+        // Health Card Screen
+        composable(Routes.HealthCard) {
+            HealthCardScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
