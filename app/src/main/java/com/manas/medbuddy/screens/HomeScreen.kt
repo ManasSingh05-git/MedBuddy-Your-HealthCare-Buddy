@@ -493,20 +493,58 @@ fun HomeScreen(
             }
 
             // Quick Navigation Shortcuts
-            SectionHeader(title = "Quick Navigation")
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            SectionHeader(title = "Core Features")
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuickActionPill("Health Timeline", Modifier.weight(1f), onClick = onNavigateToHealthTimeline)
+                QuickActionPill("Health Card", Modifier.weight(1f), onClick = onNavigateToHealthCard)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuickActionPill("Vaccines", Modifier.weight(1f), onClick = onNavigateToVaccinationManager)
+                QuickActionPill("Allergies", Modifier.weight(1f), onClick = onNavigateToAllergyRegistry)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuickActionPill("Medical Vault", Modifier.weight(1f), onClick = onNavigateToMedicalVault)
+                QuickActionPill("Rx Scanner", Modifier.weight(1f), onClick = onNavigateToPrescriptionScanner)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuickActionPill("Reports", Modifier.weight(1f), onClick = onNavigateToReportExplainer)
+                QuickActionPill("Appointments", Modifier.weight(1f), onClick = onNavigateToAppointmentOrganizer)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 QuickActionPill("Sleep Tracker", Modifier.weight(1f), onClick = onNavigateToSleepTracker)
                 QuickActionPill("Hospital Finder", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 QuickActionPill("Health Map", Modifier.weight(1f), onClick = onNavigateToHealthMap)
                 QuickActionPill("SOS Contacts", Modifier.weight(1f), onClick = onNavigateToSosSettings)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            SectionHeader(title = "More Tools")
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuickActionPill("Symptom Journal", Modifier.weight(1f), onClick = onNavigateToSymptomJournal)
+                QuickActionPill("Doctor Prep", Modifier.weight(1f), onClick = onNavigateToDoctorPrep)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuickActionPill("Medical Glossary", Modifier.weight(1f), onClick = onNavigateToMedicalGlossary)
+                QuickActionPill("Wellness Coach", Modifier.weight(1f), onClick = onNavigateToWellnessCoach)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuickActionPill("Report Compare", Modifier.weight(1f), onClick = onNavigateToReportComparison)
+                QuickActionPill("Family Profiles", Modifier.weight(1f), onClick = onNavigateToFamilyProfiles)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuickActionPill("Caregiver Dash", Modifier.weight(1f), onClick = onNavigateToCaregiverDashboard)
+                QuickActionPill("Family Calendar", Modifier.weight(1f), onClick = onNavigateToFamilyCalendar)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuickActionPill("Adherence Reports", Modifier.weight(1f), onClick = onNavigateToAdherenceReports)
+                QuickActionPill("Document Sharing", Modifier.weight(1f), onClick = onNavigateToDocumentSharing)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuickActionPill("Menstrual Tracker", Modifier.weight(1f), onClick = onNavigateToMenstrualTracker)
+                QuickActionPill("Movement Coach", Modifier.weight(1f), onClick = onNavigateToMovementCoach)
             }
 
             Spacer(modifier = Modifier.height(48.dp))
