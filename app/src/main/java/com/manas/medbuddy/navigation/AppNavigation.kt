@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import com.manas.medbuddy.screens.AddEditMedicineScreen
 import com.manas.medbuddy.screens.AddMedicineScreen
 import com.manas.medbuddy.screens.AiHealthInsightsScreen
+import com.manas.medbuddy.screens.AllergyRegistryScreen
 import com.manas.medbuddy.screens.ForgotPasswordScreen
 import com.manas.medbuddy.screens.HealthMapScreen
 import com.manas.medbuddy.screens.HealthScreen
@@ -46,6 +47,7 @@ object Routes {
     const val PrescriptionScanner = "prescription_scanner"
     const val ReportExplainer = "report_explainer"
     const val MedicalVault = "medical_vault"
+    const val AllergyRegistry = "allergy_registry"
     const val Health = "health"
     const val Profile = "profile"
     const val Settings = "settings"
@@ -139,6 +141,7 @@ fun AppNavigation(
                 onNavigateToPrescriptionScanner = { navController.navigate(Routes.PrescriptionScanner) },
                 onNavigateToReportExplainer = { navController.navigate(Routes.ReportExplainer) },
                 onNavigateToMedicalVault = { navController.navigate(Routes.MedicalVault) },
+                onNavigateToAllergyRegistry = { navController.navigate(Routes.AllergyRegistry) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -147,6 +150,13 @@ fun AppNavigation(
                         launchSingleTop = true
                     }
                 }
+            )
+        }
+
+        // Allergy Registry Screen
+        composable(Routes.AllergyRegistry) {
+            AllergyRegistryScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 

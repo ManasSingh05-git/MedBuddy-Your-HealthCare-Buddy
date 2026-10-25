@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +24,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.database.ValueEventListener
+import com.manas.medbuddy.allergy.AllergyRecord
+import com.manas.medbuddy.allergy.AllergyRepository
 import com.manas.medbuddy.data.MedicineRepository
 import com.manas.medbuddy.model.Medicine
 import com.manas.medbuddy.model.ReminderTime
@@ -43,6 +47,7 @@ fun AddEditMedicineScreen(
 ) {
     val context = LocalContext.current
     val scheduler = remember { ReminderScheduler(context) }
+    val allergyRepo = remember { AllergyRepository(context) }
 
     val isEditing = !medicineId.isNullOrBlank()
 
@@ -58,12 +63,32 @@ fun AddEditMedicineScreen(
     var selectedDays by remember { mutableStateOf(listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")) }
 
     var reminderTimes by remember { mutableStateOf<List<ReminderTime>>(emptyList()) }
+    var userAllergies by remember { mutableStateOf<List<AllergyRecord>>(emptyList()) }
 
     var isSaving by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showCustomTimeDialog by remember { mutableStateOf(false) }
 
     val daysOfWeek = remember { listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun") }
+
+    DisposableEffect(Unit) {
+        val listener: ValueEventListener? = try {
+            allergyRepo.listenToAllergies(
+                onUpdate = { list, _ -> userAllergies = list },
+                onError = {}
+            )
+        } catch (_: Exception) {
+            null
+        }
+
+        onDispose {
+            if (listener != null) allergyRepo.removeListener(listener)
+        }
+    }
+
+    val allergyMatch = remember(name, userAllergies) {
+        allergyRepo.checkMedicineAllergyMatch(name, userAllergies)
+    }
 
     // Fetch existing medicine if editing
     LaunchedEffect(medicineId) {
@@ -116,6 +141,29 @@ fun AddEditMedicineScreen(
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            // Allergy Alert Banner if potential match detected
+            if (allergyMatch.hasMatch) {
+                Surface(
+                    color = SOSRed.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, SOSRed)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Icon(Icons.Default.Warning, contentDescription = null, tint = SOSRed)
+                        Text(
+                            text = allergyMatch.warningMessage,
+                            color = TextPrimary,
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
+            }
+
             // Section 1: Medicine Details
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Column(
