@@ -120,6 +120,7 @@ fun HomeScreen(
     onNavigateToCaregiverDashboard: () -> Unit = {},
     onNavigateToFamilyCalendar: () -> Unit = {},
     onNavigateToAdherenceReports: () -> Unit = {},
+    onNavigateToDocumentSharing: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -514,6 +515,13 @@ fun HomeScreen(
             ) {
                 QuickActionPill("Family Calendar", Modifier.weight(1f), onClick = onNavigateToFamilyCalendar)
                 QuickActionPill("Adherence Reports", Modifier.weight(1f), onClick = onNavigateToAdherenceReports)
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                QuickActionPill("Document Sharing", Modifier.weight(1f), onClick = onNavigateToDocumentSharing)
+                QuickActionPill("Hospital Finder", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
