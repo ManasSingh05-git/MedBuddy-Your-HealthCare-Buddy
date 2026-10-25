@@ -1,19 +1,21 @@
 package com.manas.medbuddy.data.model
 
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 data class ActiveSleepSession(
-    val startTimeMillis: Long,
-    val isTracking: Boolean = true
+    val startTimeMillis: Long = System.currentTimeMillis()
 ) {
-    fun getElapsedMinutes(nowMillis: Long = System.currentTimeMillis()): Long {
-        return maxOf(0L, (nowMillis - startTimeMillis) / (1000 * 60))
-    }
-
-    fun getFormattedElapsed(nowMillis: Long = System.currentTimeMillis()): String {
-        val mins = getElapsedMinutes(nowMillis)
-        val hrs = mins / 60
-        val remainingMins = mins % 60
-        return String.format(Locale.US, "%02dh %02dm", hrs, remainingMins)
+    fun getFormattedElapsed(nowMillis: Long): String {
+        val elapsedMillis = maxOf(0L, nowMillis - startTimeMillis)
+        val totalMinutes = TimeUnit.MILLISECONDS.toMinutes(elapsedMillis)
+        val hrs = totalMinutes / 60
+        val mins = totalMinutes % 60
+        val secs = TimeUnit.MILLISECONDS.toSeconds(elapsedMillis) % 60
+        return if (hrs > 0) {
+            String.format(Locale.US, "%dh %02dm %02ds", hrs, mins, secs)
+        } else {
+            String.format(Locale.US, "%dm %02ds", mins, secs)
+        }
     }
 }
