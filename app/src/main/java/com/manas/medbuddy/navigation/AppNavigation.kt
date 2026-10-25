@@ -13,6 +13,7 @@ import com.manas.medbuddy.screens.AdherenceReportScreen
 import com.manas.medbuddy.screens.AiHealthInsightsScreen
 import com.manas.medbuddy.screens.AllergyRegistryScreen
 import com.manas.medbuddy.screens.AppointmentOrganizerScreen
+import com.manas.medbuddy.screens.AppointmentsScreen
 import com.manas.medbuddy.screens.CaregiverDashboardScreen
 import com.manas.medbuddy.screens.DoctorPrepScreen
 import com.manas.medbuddy.screens.DocumentSharingScreen
@@ -27,6 +28,7 @@ import com.manas.medbuddy.screens.HomeScreen
 import com.manas.medbuddy.screens.HospitalDetailsScreen
 import com.manas.medbuddy.screens.HospitalFinderScreen
 import com.manas.medbuddy.screens.LoginScreen
+import com.manas.medbuddy.screens.MedBuddyAiScreen
 import com.manas.medbuddy.screens.MedicalGlossaryScreen
 import com.manas.medbuddy.screens.MedicalVaultScreen
 import com.manas.medbuddy.screens.MedicineListScreen
@@ -38,13 +40,16 @@ import com.manas.medbuddy.screens.PrescriptionScannerScreen
 import com.manas.medbuddy.screens.ProfileScreen
 import com.manas.medbuddy.screens.ReportComparisonScreen
 import com.manas.medbuddy.screens.ReportExplainerScreen
+import com.manas.medbuddy.screens.ReportsScreen
 import com.manas.medbuddy.screens.SettingsScreen
 import com.manas.medbuddy.screens.SignupScreen
 import com.manas.medbuddy.screens.SleepReminderScreen
 import com.manas.medbuddy.screens.SleepTrackerScreen
+import com.manas.medbuddy.screens.SosScreen
 import com.manas.medbuddy.screens.SosSettingsScreen
 import com.manas.medbuddy.screens.SplashScreen
 import com.manas.medbuddy.screens.SymptomJournalScreen
+import com.manas.medbuddy.screens.ToolsScreen
 import com.manas.medbuddy.screens.VaccinationManagerScreen
 import com.manas.medbuddy.screens.WaterIntakeScreen
 import com.manas.medbuddy.screens.WellnessCoachScreen
@@ -55,6 +60,11 @@ object Routes {
     const val Signup = "signup"
     const val ForgotPassword = "forgot_password"
     const val Home = "home"
+    const val Tools = "tools"
+    const val Assistant = "assistant"
+    const val Appointments = "appointments"
+    const val Reports = "reports"
+    const val SosEmergency = "sos_emergency"
     const val MedicineList = "medicine_list"
     const val AddEditMedicine = "add_edit_medicine"
     const val Medicines = "medicines"
@@ -166,7 +176,7 @@ fun AppNavigation(
                 onNavigateToMedicines = { navController.navigate(Routes.Medicines) },
                 onNavigateToHealth = { navController.navigate(Routes.Health) },
                 onNavigateToSettings = { navController.navigate(Routes.Profile) },
-                onNavigateToSosSettings = { navController.navigate(Routes.SosSettings) },
+                onNavigateToSosSettings = { navController.navigate(Routes.SosEmergency) },
                 onNavigateToHospitalFinder = { navController.navigate(Routes.HospitalFinder) },
                 onNavigateToHealthMap = { navController.navigate(Routes.HealthMap) },
                 onNavigateToSleepTracker = { navController.navigate(Routes.SleepTracker) },
@@ -197,6 +207,50 @@ fun AppNavigation(
                         launchSingleTop = true
                     }
                 }
+            )
+        }
+
+        // More Tools Screen
+        composable(Routes.Tools) {
+            ToolsScreen(
+                onNavigateToRoute = { route ->
+                    if (route.isNotBlank()) navController.navigate(route)
+                },
+                onTabSelected = { tab ->
+                    handleBottomTabNavigation(navController, tab)
+                }
+            )
+        }
+
+        // AI Assistant Screen
+        composable(Routes.Assistant) {
+            MedBuddyAiScreen(
+                onBack = { navController.popBackStack() },
+                onTabSelected = { tab ->
+                    handleBottomTabNavigation(navController, tab)
+                }
+            )
+        }
+
+        // Appointments Screen
+        composable(Routes.Appointments) {
+            AppointmentsScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Reports Screen
+        composable(Routes.Reports) {
+            ReportsScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // SOS Emergency Screen
+        composable(Routes.SosEmergency) {
+            SosScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToSosSettings = { navController.navigate(Routes.SosSettings) }
             )
         }
 
@@ -363,6 +417,9 @@ fun AppNavigation(
                 onNavigateToSettings = {
                     navController.navigate(Routes.Settings)
                 },
+                onTabSelected = { tab ->
+                    handleBottomTabNavigation(navController, tab)
+                },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -500,6 +557,16 @@ fun AppNavigation(
                 onBack = { navController.popBackStack() }
             )
         }
+    }
+}
+
+private fun handleBottomTabNavigation(navController: NavHostController, tab: String) {
+    when (tab) {
+        "home" -> navController.navigate(Routes.Home) { launchSingleTop = true }
+        "tools" -> navController.navigate(Routes.Tools) { launchSingleTop = true }
+        "assistant" -> navController.navigate(Routes.Assistant) { launchSingleTop = true }
+        "insights" -> navController.navigate(Routes.Health) { launchSingleTop = true }
+        "profile" -> navController.navigate(Routes.Profile) { launchSingleTop = true }
     }
 }
 
