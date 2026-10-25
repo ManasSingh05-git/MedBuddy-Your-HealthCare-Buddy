@@ -121,6 +121,7 @@ fun HomeScreen(
     onNavigateToFamilyCalendar: () -> Unit = {},
     onNavigateToAdherenceReports: () -> Unit = {},
     onNavigateToDocumentSharing: () -> Unit = {},
+    onNavigateToMenstrualTracker: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -521,7 +522,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 QuickActionPill("Document Sharing", Modifier.weight(1f), onClick = onNavigateToDocumentSharing)
-                QuickActionPill("Hospital Finder", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
+                QuickActionPill("Menstrual Tracker", Modifier.weight(1f), onClick = onNavigateToMenstrualTracker)
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
