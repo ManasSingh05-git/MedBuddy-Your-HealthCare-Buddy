@@ -2,38 +2,26 @@ package com.manas.medbuddy.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.manas.medbuddy.screens.AddEditMedicineScreen
 import com.manas.medbuddy.screens.AddMedicineScreen
 import com.manas.medbuddy.screens.AiHealthInsightsScreen
-import com.manas.medbuddy.screens.AllergyRegistryScreen
 import com.manas.medbuddy.screens.ForgotPasswordScreen
-import com.manas.medbuddy.screens.HealthCardScreen
 import com.manas.medbuddy.screens.HealthMapScreen
 import com.manas.medbuddy.screens.HealthScreen
-import com.manas.medbuddy.screens.HealthTimelineScreen
 import com.manas.medbuddy.screens.HomeScreen
 import com.manas.medbuddy.screens.HospitalDetailsScreen
 import com.manas.medbuddy.screens.HospitalFinderScreen
 import com.manas.medbuddy.screens.LoginScreen
-import com.manas.medbuddy.screens.MedicalVaultScreen
-import com.manas.medbuddy.screens.MedicineListScreen
 import com.manas.medbuddy.screens.MedicineReminderScreen
 import com.manas.medbuddy.screens.MedicineScreen
-import com.manas.medbuddy.screens.PrescriptionScannerScreen
 import com.manas.medbuddy.screens.ProfileScreen
-import com.manas.medbuddy.screens.ReportExplainerScreen
 import com.manas.medbuddy.screens.SettingsScreen
 import com.manas.medbuddy.screens.SignupScreen
-import com.manas.medbuddy.screens.SleepReminderScreen
 import com.manas.medbuddy.screens.SleepTrackerScreen
 import com.manas.medbuddy.screens.SosSettingsScreen
 import com.manas.medbuddy.screens.SplashScreen
-import com.manas.medbuddy.screens.VaccinationManagerScreen
 import com.manas.medbuddy.screens.WaterIntakeScreen
 
 object Routes {
@@ -42,18 +30,9 @@ object Routes {
     const val Signup = "signup"
     const val ForgotPassword = "forgot_password"
     const val Home = "home"
-    const val MedicineList = "medicine_list"
-    const val AddEditMedicine = "add_edit_medicine"
     const val Medicines = "medicines"
     const val AddMedicine = "add_medicine"
     const val MedicineReminder = "medicine_reminder"
-    const val PrescriptionScanner = "prescription_scanner"
-    const val ReportExplainer = "report_explainer"
-    const val MedicalVault = "medical_vault"
-    const val AllergyRegistry = "allergy_registry"
-    const val VaccinationManager = "vaccination_manager"
-    const val HealthTimeline = "health_timeline"
-    const val HealthCard = "health_card"
     const val Health = "health"
     const val Profile = "profile"
     const val Settings = "settings"
@@ -62,7 +41,6 @@ object Routes {
     const val HospitalDetails = "hospital_details"
     const val HealthMap = "health_map"
     const val SleepTracker = "sleep_tracker"
-    const val SleepReminders = "sleep_reminders"
     const val WaterTracker = "water_tracker"
     const val AiInsights = "ai_insights"
 }
@@ -132,25 +110,21 @@ fun AppNavigation(
         // Home Screen
         composable(Routes.Home) {
             HomeScreen(
-                onAddMedicine = { navController.navigate(Routes.AddEditMedicine) },
-                onOpenMedicineList = { navController.navigate(Routes.MedicineList) },
-                onEditMedicine = { medicineId ->
-                    navController.navigate("${Routes.AddEditMedicine}?medicineId=$medicineId")
+                onNavigateToMedicines = {
+                    navController.navigate(Routes.Medicines)
                 },
-                onNavigateToMedicines = { navController.navigate(Routes.MedicineList) },
-                onNavigateToHealth = { navController.navigate(Routes.Health) },
-                onNavigateToSettings = { navController.navigate(Routes.Profile) },
-                onNavigateToSosSettings = { navController.navigate(Routes.SosSettings) },
+                onNavigateToHealth = {
+                    navController.navigate(Routes.Health)
+                },
+                onNavigateToSettings = {
+                    navController.navigate(Routes.Profile)
+                },
+                onNavigateToSosSettings = {
+                    navController.navigate(Routes.SosSettings)
+                },
                 onNavigateToHospitalFinder = { navController.navigate(Routes.HospitalFinder) },
                 onNavigateToHealthMap = { navController.navigate(Routes.HealthMap) },
                 onNavigateToSleepTracker = { navController.navigate(Routes.SleepTracker) },
-                onNavigateToPrescriptionScanner = { navController.navigate(Routes.PrescriptionScanner) },
-                onNavigateToReportExplainer = { navController.navigate(Routes.ReportExplainer) },
-                onNavigateToMedicalVault = { navController.navigate(Routes.MedicalVault) },
-                onNavigateToAllergyRegistry = { navController.navigate(Routes.AllergyRegistry) },
-                onNavigateToVaccinationManager = { navController.navigate(Routes.VaccinationManager) },
-                onNavigateToHealthTimeline = { navController.navigate(Routes.HealthTimeline) },
-                onNavigateToHealthCard = { navController.navigate(Routes.HealthCard) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -159,109 +133,6 @@ fun AppNavigation(
                         launchSingleTop = true
                     }
                 }
-            )
-        }
-
-        // Health Card Screen
-        composable(Routes.HealthCard) {
-            HealthCardScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        // Health Timeline Screen
-        composable(Routes.HealthTimeline) {
-            HealthTimelineScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToRoute = { route ->
-                    if (route.isNotBlank()) navController.navigate(route)
-                }
-            )
-        }
-
-        // Vaccination Manager Screen
-        composable(Routes.VaccinationManager) {
-            VaccinationManagerScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        // Allergy Registry Screen
-        composable(Routes.AllergyRegistry) {
-            AllergyRegistryScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        // Medical Vault Screen
-        composable(Routes.MedicalVault) {
-            MedicalVaultScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        // Settings Screen
-        composable(Routes.Settings) {
-            SettingsScreen(
-                onNavigateToSosSettings = { navController.navigate(Routes.SosSettings) },
-                onNavigateToSleepReminders = { navController.navigate(Routes.SleepReminders) },
-                onBack = { navController.popBackStack() },
-                onLogout = {
-                    navController.navigate(Routes.Login) {
-                        popUpTo(Routes.Home) { inclusive = true }
-                    }
-                }
-            )
-        }
-
-        // SOS Settings Screen
-        composable(Routes.SosSettings) {
-            SosSettingsScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        // Medicine List Screen
-        composable(Routes.MedicineList) {
-            MedicineListScreen(
-                onBack = { navController.popBackStack() },
-                onAddMedicine = { navController.navigate(Routes.AddEditMedicine) },
-                onEditMedicine = { medicineId ->
-                    navController.navigate("${Routes.AddEditMedicine}?medicineId=$medicineId")
-                }
-            )
-        }
-
-        // Add/Edit Medicine Screen
-        composable(
-            route = "${Routes.AddEditMedicine}?medicineId={medicineId}",
-            arguments = listOf(
-                navArgument("medicineId") {
-                    type = NavType.StringType
-                    nullable = true
-                    defaultValue = null
-                }
-            )
-        ) { backStackEntry ->
-            val medicineId = backStackEntry.arguments?.getString("medicineId")
-            AddEditMedicineScreen(
-                medicineId = medicineId,
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        // Prescription Scanner Screen
-        composable(Routes.PrescriptionScanner) {
-            PrescriptionScannerScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToMedicineList = { navController.navigate(Routes.MedicineList) }
-            )
-        }
-
-        // Report Explainer Screen
-        composable(Routes.ReportExplainer) {
-            ReportExplainerScreen(
-                onBack = { navController.popBackStack() }
             )
         }
 
@@ -336,42 +207,59 @@ fun AppNavigation(
             )
         }
 
-        // Hospital Finder
+        // Settings Screen
+        composable(Routes.Settings) {
+            SettingsScreen(
+                onNavigateToSosSettings = {
+                    navController.navigate(Routes.SosSettings)
+                },
+                onBack = {
+                    navController.popBackStack()
+                },
+                onLogout = {
+                    navController.navigate(Routes.Login) {
+                        popUpTo(Routes.Home) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        // SOS Settings Screen
+        composable(Routes.SosSettings) {
+            SosSettingsScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
         composable(Routes.HospitalFinder) {
             HospitalFinderScreen(
                 onBack = { navController.popBackStack() }
             )
         }
 
-        // Health Map
         composable(Routes.HealthMap) {
             HealthMapScreen(
                 onBack = { navController.popBackStack() }
             )
         }
 
-        // Sleep Tracker
         composable(Routes.SleepTracker) {
             SleepTrackerScreen(
                 onBack = { navController.popBackStack() }
             )
         }
 
-        // Sleep Reminders
-        composable(Routes.SleepReminders) {
-            SleepReminderScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        // Water Tracker
         composable(Routes.WaterTracker) {
             WaterIntakeScreen(
                 onBack = { navController.popBackStack() }
             )
         }
 
-        // AI Insights
         composable(Routes.AiInsights) {
             AiHealthInsightsScreen(
                 onBack = { navController.popBackStack() }
