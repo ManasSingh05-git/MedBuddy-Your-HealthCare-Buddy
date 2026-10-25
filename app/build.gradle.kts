@@ -52,6 +52,10 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")
 
+    // ML Kit Text Recognition for AI Prescription Scanning
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
     // Location, Maps & JSON dependencies for SOS & Hospital Finder
     implementation("com.google.android.gms:play-services-location:21.4.0")
     implementation("com.google.android.gms:play-services-maps:20.1.0")

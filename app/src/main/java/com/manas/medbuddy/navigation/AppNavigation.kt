@@ -20,6 +20,7 @@ import com.manas.medbuddy.screens.LoginScreen
 import com.manas.medbuddy.screens.MedicineListScreen
 import com.manas.medbuddy.screens.MedicineReminderScreen
 import com.manas.medbuddy.screens.MedicineScreen
+import com.manas.medbuddy.screens.PrescriptionScannerScreen
 import com.manas.medbuddy.screens.ProfileScreen
 import com.manas.medbuddy.screens.SettingsScreen
 import com.manas.medbuddy.screens.SignupScreen
@@ -40,6 +41,7 @@ object Routes {
     const val Medicines = "medicines"
     const val AddMedicine = "add_medicine"
     const val MedicineReminder = "medicine_reminder"
+    const val PrescriptionScanner = "prescription_scanner"
     const val Health = "health"
     const val Profile = "profile"
     const val Settings = "settings"
@@ -130,6 +132,7 @@ fun AppNavigation(
                 onNavigateToHospitalFinder = { navController.navigate(Routes.HospitalFinder) },
                 onNavigateToHealthMap = { navController.navigate(Routes.HealthMap) },
                 onNavigateToSleepTracker = { navController.navigate(Routes.SleepTracker) },
+                onNavigateToPrescriptionScanner = { navController.navigate(Routes.PrescriptionScanner) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -188,6 +191,14 @@ fun AppNavigation(
             AddEditMedicineScreen(
                 medicineId = medicineId,
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Prescription Scanner Screen
+        composable(Routes.PrescriptionScanner) {
+            PrescriptionScannerScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToMedicineList = { navController.navigate(Routes.MedicineList) }
             )
         }
 

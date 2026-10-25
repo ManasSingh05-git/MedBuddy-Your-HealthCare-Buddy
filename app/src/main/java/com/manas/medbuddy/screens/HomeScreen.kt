@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
@@ -44,7 +45,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ValueEventListener
 import com.manas.medbuddy.data.MedicineRepository
 import com.manas.medbuddy.data.repository.EmergencyContactRepository
-import com.manas.medbuddy.data.repository.HospitalRepository
 import com.manas.medbuddy.model.DoseLog
 import com.manas.medbuddy.model.Medicine
 import com.manas.medbuddy.reminder.ReminderScheduler
@@ -70,6 +70,7 @@ fun HomeScreen(
     onNavigateToHospitalFinder: () -> Unit = {},
     onNavigateToHealthMap: () -> Unit = {},
     onNavigateToSleepTracker: () -> Unit = {},
+    onNavigateToPrescriptionScanner: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -182,6 +183,15 @@ fun HomeScreen(
                     onClick = {
                         coroutineScope.launch { drawerState.close() }
                         onNavigateToSettings()
+                    }
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.DocumentScanner, contentDescription = "AI Scanner", tint = CyanPrimary) },
+                    label = { Text("AI Prescription Scanner", color = TextPrimary) },
+                    selected = false,
+                    onClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        onNavigateToPrescriptionScanner()
                     }
                 )
                 NavigationDrawerItem(
@@ -341,7 +351,7 @@ fun HomeScreen(
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
-                    ActionCard("Schedules & History", Modifier.weight(1f), onClick = onOpenMedicineList)
+                    ActionCard("AI Rx Scanner 📷", Modifier.weight(1f), onClick = onNavigateToPrescriptionScanner)
                 }
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -353,7 +363,7 @@ fun HomeScreen(
                 Text("My medicines", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                 when {
                     loading -> Text("Loading medicines...", color = TextSecondary)
-                    medicines.isEmpty() -> Text("No medicines yet. Tap Add Medicine to begin.", color = TextSecondary)
+                    medicines.isEmpty() -> Text("No medicines yet. Tap Add Medicine or AI Rx Scanner to begin.", color = TextSecondary)
                     else -> medicines.forEach { medicine ->
                         MedicineCard(
                             medicine = medicine,
