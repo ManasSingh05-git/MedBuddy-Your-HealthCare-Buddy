@@ -24,6 +24,7 @@ import com.manas.medbuddy.screens.SosSettingsScreen
 import com.manas.medbuddy.screens.SplashScreen
 import com.manas.medbuddy.screens.SymptomJournalScreen
 import com.manas.medbuddy.screens.DoctorPrepScreen
+import com.manas.medbuddy.screens.MedicalGlossaryScreen
 import com.manas.medbuddy.screens.WaterIntakeScreen
 
 object Routes {
@@ -47,6 +48,7 @@ object Routes {
     const val AiInsights = "ai_insights"
     const val SymptomJournal = "symptom_journal"
     const val DoctorPrep = "doctor_prep"
+    const val MedicalGlossary = "medical_glossary"
 }
 
 @Composable
@@ -131,6 +133,7 @@ fun AppNavigation(
                 onNavigateToSleepTracker = { navController.navigate(Routes.SleepTracker) },
                 onNavigateToSymptomJournal = { navController.navigate(Routes.SymptomJournal) },
                 onNavigateToDoctorPrep = { navController.navigate(Routes.DoctorPrep) },
+                onNavigateToMedicalGlossary = { navController.navigate(Routes.MedicalGlossary) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -268,6 +271,12 @@ fun AppNavigation(
 
         composable(Routes.DoctorPrep) {
             DoctorPrepScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.MedicalGlossary) {
+            MedicalGlossaryScreen(
                 onBack = { navController.popBackStack() }
             )
         }
