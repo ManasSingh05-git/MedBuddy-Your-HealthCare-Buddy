@@ -30,6 +30,7 @@ import com.manas.medbuddy.screens.ReportComparisonScreen
 import com.manas.medbuddy.screens.FamilyProfilesScreen
 import com.manas.medbuddy.screens.CaregiverDashboardScreen
 import com.manas.medbuddy.screens.FamilyCalendarScreen
+import com.manas.medbuddy.screens.AdherenceReportScreen
 import com.manas.medbuddy.screens.WaterIntakeScreen
 
 object Routes {
@@ -59,6 +60,7 @@ object Routes {
     const val FamilyProfiles = "family_profiles"
     const val CaregiverDashboard = "caregiver_dashboard"
     const val FamilyCalendar = "family_calendar"
+    const val AdherenceReports = "adherence_reports"
 }
 
 @Composable
@@ -149,6 +151,7 @@ fun AppNavigation(
                 onNavigateToFamilyProfiles = { navController.navigate(Routes.FamilyProfiles) },
                 onNavigateToCaregiverDashboard = { navController.navigate(Routes.CaregiverDashboard) },
                 onNavigateToFamilyCalendar = { navController.navigate(Routes.FamilyCalendar) },
+                onNavigateToAdherenceReports = { navController.navigate(Routes.AdherenceReports) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -322,6 +325,12 @@ fun AppNavigation(
 
         composable(Routes.FamilyCalendar) {
             FamilyCalendarScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.AdherenceReports) {
+            AdherenceReportScreen(
                 onBack = { navController.popBackStack() }
             )
         }

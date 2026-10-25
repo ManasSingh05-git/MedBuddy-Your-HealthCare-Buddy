@@ -119,6 +119,7 @@ fun HomeScreen(
     onNavigateToFamilyProfiles: () -> Unit = {},
     onNavigateToCaregiverDashboard: () -> Unit = {},
     onNavigateToFamilyCalendar: () -> Unit = {},
+    onNavigateToAdherenceReports: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -512,7 +513,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 QuickActionPill("Family Calendar", Modifier.weight(1f), onClick = onNavigateToFamilyCalendar)
-                QuickActionPill("Hospital Finder", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
+                QuickActionPill("Adherence Reports", Modifier.weight(1f), onClick = onNavigateToAdherenceReports)
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
