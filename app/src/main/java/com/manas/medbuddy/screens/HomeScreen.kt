@@ -131,6 +131,8 @@ fun HomeScreen(
     onNavigateToMenstrualTracker: () -> Unit = {},
     onNavigateToMovementCoach: () -> Unit = {},
     onNavigateToMoreHealthOptions: () -> Unit = {},
+    onNavigateToTools: () -> Unit = {},
+    onNavigateToAssistant: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -246,8 +248,8 @@ fun HomeScreen(
                 selectedTab = "home",
                 onTabSelected = { tab ->
                     when (tab) {
-                        "tools" -> onNavigateToMedicines()
-                        "assistant" -> onNavigateToReportExplainer()
+                        "tools" -> onNavigateToTools()
+                        "assistant" -> onNavigateToAssistant()
                         "insights" -> onNavigateToHealth()
                         "profile" -> onNavigateToSettings()
                     }

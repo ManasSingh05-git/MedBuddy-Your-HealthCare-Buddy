@@ -204,6 +204,8 @@ fun AppNavigation(
                 onNavigateToMenstrualTracker = { navController.navigate(Routes.MenstrualTracker) },
                 onNavigateToMovementCoach = { navController.navigate(Routes.MovementCoach) },
                 onNavigateToMoreHealthOptions = { navController.navigate(Routes.MoreHealthOptions) },
+                onNavigateToTools = { navController.navigate(Routes.Tools) },
+                onNavigateToAssistant = { navController.navigate(Routes.Assistant) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
