@@ -49,6 +49,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.manas.medbuddy.ai.GroqAiEngine
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import com.manas.medbuddy.ui.components.BottomNavigationBar
 import com.manas.medbuddy.ui.components.GlassCard
 import com.manas.medbuddy.ui.components.MedBuddyMascot
@@ -67,7 +71,21 @@ fun MedBuddyAiScreen(
     onTabSelected: (String) -> Unit = {}
 ) {
     var selectedPrompt by remember { mutableStateOf("") }
+    var aiAnswerText by remember { mutableStateOf("") }
+    var isAiLoading by remember { mutableStateOf(false) }
     var isListening by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
+    fun askGroqAi(prompt: String) {
+        selectedPrompt = prompt
+        isAiLoading = true
+        aiAnswerText = "Groq AI is analyzing..."
+        coroutineScope.launch {
+            val answer = GroqAiEngine.getAiResponse(prompt)
+            aiAnswerText = answer
+            isAiLoading = false
+        }
+    }
 
     val infiniteTransition = rememberInfiniteTransition(label = "waveAnim")
     val waveScale by infiniteTransition.animateFloat(
@@ -147,29 +165,44 @@ fun MedBuddyAiScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    PromptPill("🤒 I have a headache", Modifier.weight(1f)) { selectedPrompt = "I have a headache" }
-                    PromptPill("🥗 Meal suggestions", Modifier.weight(1f)) { selectedPrompt = "Meal suggestions" }
+                    PromptPill("🤒 I have a headache", Modifier.weight(1f)) { askGroqAi("I have a headache. What should I do?") }
+                    PromptPill("🥗 Meal suggestions", Modifier.weight(1f)) { askGroqAi("Give me healthy meal suggestions.") }
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    PromptPill("📄 Explain my report", Modifier.weight(1f)) { selectedPrompt = "Explain my report" }
-                    PromptPill("⏰ Remind my medicine", Modifier.weight(1f)) { selectedPrompt = "Remind my medicine" }
+                    PromptPill("📄 Explain my report", Modifier.weight(1f)) { askGroqAi("Explain standard blood test report terms.") }
+                    PromptPill("⏰ Remind my medicine", Modifier.weight(1f)) { askGroqAi("How to set medicine reminders?") }
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    PromptPill("💊 Side effects", Modifier.weight(1f)) { selectedPrompt = "Side effects" }
-                    PromptPill("🌙 Sleep tips", Modifier.weight(1f)) { selectedPrompt = "Sleep tips" }
+                    PromptPill("💊 Side effects", Modifier.weight(1f)) { askGroqAi("Tell me about medicine side effects safety.") }
+                    PromptPill("🌙 Sleep tips", Modifier.weight(1f)) { askGroqAi("Give me 3 practical sleep improvement tips.") }
                 }
             }
 
             if (selectedPrompt.isNotBlank()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 GlassCard(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "AI Answer for '$selectedPrompt':\nRest in a quiet room, stay hydrated with 500ml water, and consider taking prescribed Paracetamol if pain persists.",
-                        color = CyanPrimary,
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp,
-                        modifier = Modifier.padding(16.dp)
-                    )
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("MedBuddy AI Answer (Groq):", color = EmeraldPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        if (isAiLoading) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                CircularProgressIndicator(color = CyanPrimary, modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                                Text("Thinking...", color = TextSecondary, fontSize = 13.sp)
+                            }
+                        } else {
+                            Text(
+                                text = aiAnswerText,
+                                color = TextPrimary,
+                                fontSize = 13.sp,
+                                lineHeight = 19.sp
+                            )
+                        }
+                    }
                 }
             }
 
