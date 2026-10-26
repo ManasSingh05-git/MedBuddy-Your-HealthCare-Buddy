@@ -257,7 +257,7 @@ fun MedBuddyMascot(
 @Composable
 fun HeartPillLogo(
     modifier: Modifier = Modifier,
-    size: Dp = 90.dp
+    size: Dp = 110.dp
 ) {
     Box(
         modifier = modifier.size(size),
@@ -268,59 +268,85 @@ fun HeartPillLogo(
             val h = this.size.height
             val center = Offset(w / 2, h / 2)
 
-            // Radial ambient glow
+            // Radial ambient green glow
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0x881DE9B6),
-                        Color(0x4400E5FF),
+                        Color(0xAA00E676),
+                        Color(0x551DE9B6),
                         Color.Transparent
                     ),
                     center = center,
-                    radius = w * 0.75f
+                    radius = w * 0.8f
                 )
             )
 
-            // Heart shape split diagonally into two pill-halves
+            // Outer thick Heart Outline
             val heartPath = Path().apply {
-                moveTo(w * 0.5f, h * 0.82f)
-                cubicTo(w * 0.12f, h * 0.58f, 0f, h * 0.35f, w * 0.22f, h * 0.15f)
+                moveTo(w * 0.5f, h * 0.85f)
+                cubicTo(w * 0.08f, h * 0.58f, -0.05f, h * 0.28f, w * 0.22f, h * 0.12f)
                 cubicTo(w * 0.38f, h * 0.02f, w * 0.5f, h * 0.22f, w * 0.5f, h * 0.28f)
-                cubicTo(w * 0.5f, h * 0.22f, w * 0.62f, h * 0.02f, w * 0.78f, h * 0.15f)
-                cubicTo(w * 1.0f, h * 0.35f, w * 0.88f, h * 0.58f, w * 0.5f, h * 0.82f)
+                cubicTo(w * 0.5f, h * 0.22f, w * 0.62f, h * 0.02f, w * 0.78f, h * 0.12f)
+                cubicTo(w * 1.05f, h * 0.28f, w * 0.92f, h * 0.58f, w * 0.5f, h * 0.85f)
                 close()
             }
 
-            // Left half clip (white to light cyan gradient)
+            // Draw Heart stroke
             drawPath(
                 path = heartPath,
                 brush = Brush.linearGradient(
-                    colors = listOf(Color(0xFFE0F7FA), Color(0xFFFFFFFF)),
-                    start = Offset(0f, h),
-                    end = Offset(w, 0f)
-                )
+                    colors = listOf(Color(0xFF00E676), Color(0xFF1DE9B6), Color(0xFF00E5FF))
+                ),
+                style = Stroke(width = w * 0.09f, cap = StrokeCap.Round)
             )
 
-            // Right pill half overlay
-            val rightPillClip = Path().apply {
-                moveTo(w * 0.25f, 0f)
-                lineTo(w * 1.2f, 0f)
-                lineTo(w * 1.2f, h * 1.2f)
-                lineTo(w * 0.52f, h * 0.85f)
-                close()
-            }
+            // Plus Symbol (top-left inside heart)
+            val plusX = w * 0.36f
+            val plusY = h * 0.38f
+            val plusSize = w * 0.09f
+            val strokeW = w * 0.045f
 
-            drawPath(
-                path = Path.combine(
-                    PathOperation.Intersect,
-                    heartPath,
-                    rightPillClip
-                ),
-                brush = Brush.linearGradient(
-                    colors = listOf(EmeraldPrimary, CyanPrimary),
-                    start = Offset(w * 0.3f, 0f),
-                    end = Offset(w, h)
-                )
+            // Horizontal line
+            drawLine(
+                color = Color.White,
+                start = Offset(plusX - plusSize, plusY),
+                end = Offset(plusX + plusSize, plusY),
+                strokeWidth = strokeW,
+                cap = StrokeCap.Round
+            )
+            // Vertical line
+            drawLine(
+                color = Color.White,
+                start = Offset(plusX, plusY - plusSize),
+                end = Offset(plusX, plusY + plusSize),
+                strokeWidth = strokeW,
+                cap = StrokeCap.Round
+            )
+
+            // Capsule Pill (center-right inside heart, 45-degree angle)
+            val pillCenterX = w * 0.58f
+            val pillCenterY = h * 0.48f
+            val pillLength = w * 0.18f
+            val pillRadius = w * 0.08f
+
+            // White top half of pill
+            drawCircle(
+                color = Color.White,
+                radius = pillRadius,
+                center = Offset(pillCenterX - pillLength * 0.35f, pillCenterY - pillLength * 0.35f)
+            )
+            // Green bottom half of pill
+            drawCircle(
+                color = Color(0xFF00E676),
+                radius = pillRadius,
+                center = Offset(pillCenterX + pillLength * 0.35f, pillCenterY + pillLength * 0.35f)
+            )
+            // Middle dividing line
+            drawLine(
+                color = Color(0xFF02140D),
+                start = Offset(pillCenterX - pillRadius * 0.7f, pillCenterY + pillRadius * 0.7f),
+                end = Offset(pillCenterX + pillRadius * 0.7f, pillCenterY - pillRadius * 0.7f),
+                strokeWidth = w * 0.025f
             )
         }
     }
