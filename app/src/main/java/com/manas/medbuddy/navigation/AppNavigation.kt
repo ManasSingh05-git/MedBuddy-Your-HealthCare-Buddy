@@ -37,6 +37,7 @@ import com.manas.medbuddy.screens.MedicineScreen
 import com.manas.medbuddy.screens.MenstrualTrackerScreen
 import com.manas.medbuddy.screens.MoreHealthOptionsScreen
 import com.manas.medbuddy.screens.MovementCoachScreen
+import com.manas.medbuddy.screens.OnboardingScreen
 import com.manas.medbuddy.screens.PersonalInformationScreen
 import com.manas.medbuddy.screens.PrescriptionScannerScreen
 import com.manas.medbuddy.screens.ProfileScreen
@@ -58,6 +59,7 @@ import com.manas.medbuddy.screens.WellnessCoachScreen
 
 object Routes {
     const val Splash = "splash"
+    const val Onboarding = "onboarding"
     const val Login = "login"
     const val Signup = "signup"
     const val ForgotPassword = "forgot_password"
@@ -120,7 +122,7 @@ fun AppNavigation(
         composable(Routes.Splash) {
             SplashScreen(
                 onFinished = {
-                    navController.navigate(Routes.Login) {
+                    navController.navigate(Routes.Onboarding) {
                         popUpTo(Routes.Splash) {
                             inclusive = true
                         }
@@ -129,6 +131,20 @@ fun AppNavigation(
                 },
                 onAlreadyAuthenticated = {
                     navController.navigateToHome()
+                }
+            )
+        }
+
+        // Onboarding Screen
+        composable(Routes.Onboarding) {
+            OnboardingScreen(
+                onFinished = {
+                    navController.navigate(Routes.Login) {
+                        popUpTo(Routes.Onboarding) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 }
             )
         }
