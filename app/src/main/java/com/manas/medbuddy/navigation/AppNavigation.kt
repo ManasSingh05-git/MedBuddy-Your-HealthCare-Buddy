@@ -12,6 +12,7 @@ import com.manas.medbuddy.screens.AddMedicineScreen
 import com.manas.medbuddy.screens.AiHealthInsightsScreen
 import com.manas.medbuddy.screens.AllergyRegistryScreen
 import com.manas.medbuddy.screens.AppointmentOrganizerScreen
+import com.manas.medbuddy.screens.ExpenseTrackerScreen
 import com.manas.medbuddy.screens.ForgotPasswordScreen
 import com.manas.medbuddy.screens.HealthCardScreen
 import com.manas.medbuddy.screens.HealthMapScreen
@@ -58,6 +59,7 @@ object Routes {
     const val HealthCard = "health_card"
     const val AppointmentOrganizer = "appointment_organizer"
     const val RefillPlanner = "refill_planner"
+    const val ExpenseTracker = "expense_tracker"
     const val Health = "health"
     const val Profile = "profile"
     const val Settings = "settings"
@@ -157,6 +159,7 @@ fun AppNavigation(
                 onNavigateToHealthCard = { navController.navigate(Routes.HealthCard) },
                 onNavigateToAppointmentOrganizer = { navController.navigate(Routes.AppointmentOrganizer) },
                 onNavigateToRefillPlanner = { navController.navigate(Routes.RefillPlanner) },
+                onNavigateToExpenseTracker = { navController.navigate(Routes.ExpenseTracker) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -165,6 +168,13 @@ fun AppNavigation(
                         launchSingleTop = true
                     }
                 }
+            )
+        }
+
+        // Expense Tracker Screen
+        composable(Routes.ExpenseTracker) {
+            ExpenseTrackerScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
