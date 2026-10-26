@@ -89,6 +89,7 @@ fun HomeScreen(
     onNavigateToAppointmentOrganizer: () -> Unit = {},
     onNavigateToRefillPlanner: () -> Unit = {},
     onNavigateToExpenseTracker: () -> Unit = {},
+    onNavigateToInsuranceOrganizer: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -201,6 +202,15 @@ fun HomeScreen(
                     onClick = {
                         coroutineScope.launch { drawerState.close() }
                         onNavigateToSettings()
+                    }
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Shield, contentDescription = "Insurance Organizer", tint = CyanPrimary) },
+                    label = { Text("Health Insurance Organizer 🛡️", color = TextPrimary) },
+                    selected = false,
+                    onClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        onNavigateToInsuranceOrganizer()
                     }
                 )
                 NavigationDrawerItem(
@@ -450,32 +460,37 @@ fun HomeScreen(
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Add Medicine", Modifier.weight(1f), onClick = onAddMedicine)
+                    ActionCard("Insurance 🛡️", Modifier.weight(1f), onClick = onNavigateToInsuranceOrganizer)
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Expenses 💰", Modifier.weight(1f), onClick = onNavigateToExpenseTracker)
-                }
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Refill Planner 🛍️", Modifier.weight(1f), onClick = onNavigateToRefillPlanner)
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Appointments 🏥", Modifier.weight(1f), onClick = onNavigateToAppointmentOrganizer)
-                }
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Health Card 💳", Modifier.weight(1f), onClick = onNavigateToHealthCard)
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Medical Timeline 📅", Modifier.weight(1f), onClick = onNavigateToHealthTimeline)
-                }
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Vaccination Records 💉", Modifier.weight(1f), onClick = onNavigateToVaccinationManager)
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Allergy Registry ⚠️", Modifier.weight(1f), onClick = onNavigateToAllergyRegistry)
-                }
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Medical Vault 🔒", Modifier.weight(1f), onClick = onNavigateToMedicalVault)
-                    ActionCard("AI Rx Scanner 📷", Modifier.weight(1f), onClick = onNavigateToPrescriptionScanner)
                 }
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ActionCard("AI Rx Scanner 📷", Modifier.weight(1f), onClick = onNavigateToPrescriptionScanner)
                     ActionCard("Report Explainer 📑", Modifier.weight(1f), onClick = onNavigateToReportExplainer)
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActionCard("Sleep Tracker 🌙", Modifier.weight(1f), onClick = onNavigateToSleepTracker)
+                    ActionCard("Find Hospitals 🏥", Modifier.weight(1f), onClick = onNavigateToHospitalFinder)
                 }
 
                 // Medicines List

@@ -21,6 +21,7 @@ import com.manas.medbuddy.screens.HealthTimelineScreen
 import com.manas.medbuddy.screens.HomeScreen
 import com.manas.medbuddy.screens.HospitalDetailsScreen
 import com.manas.medbuddy.screens.HospitalFinderScreen
+import com.manas.medbuddy.screens.InsuranceOrganizerScreen
 import com.manas.medbuddy.screens.LoginScreen
 import com.manas.medbuddy.screens.MedicalVaultScreen
 import com.manas.medbuddy.screens.MedicineListScreen
@@ -60,6 +61,7 @@ object Routes {
     const val AppointmentOrganizer = "appointment_organizer"
     const val RefillPlanner = "refill_planner"
     const val ExpenseTracker = "expense_tracker"
+    const val InsuranceOrganizer = "insurance_organizer"
     const val Health = "health"
     const val Profile = "profile"
     const val Settings = "settings"
@@ -160,6 +162,7 @@ fun AppNavigation(
                 onNavigateToAppointmentOrganizer = { navController.navigate(Routes.AppointmentOrganizer) },
                 onNavigateToRefillPlanner = { navController.navigate(Routes.RefillPlanner) },
                 onNavigateToExpenseTracker = { navController.navigate(Routes.ExpenseTracker) },
+                onNavigateToInsuranceOrganizer = { navController.navigate(Routes.InsuranceOrganizer) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -168,6 +171,13 @@ fun AppNavigation(
                         launchSingleTop = true
                     }
                 }
+            )
+        }
+
+        // Insurance Organizer Screen
+        composable(Routes.InsuranceOrganizer) {
+            InsuranceOrganizerScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
