@@ -2,7 +2,6 @@ package com.manas.medbuddy.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,14 +27,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.manas.medbuddy.R
-import com.manas.medbuddy.ui.theme.CyanPrimary
 import com.manas.medbuddy.ui.theme.EmeraldPrimary
-import com.manas.medbuddy.ui.theme.TextPrimary
-import com.manas.medbuddy.ui.theme.TextSecondary
 
 @Composable
 fun OnboardingScreen(
@@ -45,9 +39,9 @@ fun OnboardingScreen(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // High-Res Onboarding Background Image from mad project ss/onboarding_main_screen.png
+        // High-Res Onboarding Background Image from mad project ss/onboarding page.png
         Image(
-            painter = painterResource(id = R.drawable.onboarding_main_screen),
+            painter = painterResource(id = R.drawable.onboarding_bg),
             contentDescription = "Onboarding Background",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
@@ -70,33 +64,21 @@ fun OnboardingScreen(
                 Surface(
                     onClick = onFinished,
                     shape = CircleShape,
-                    color = Color(0x33000000)
+                    color = Color(0x44000000)
                 ) {
                     Text(
                         text = "Skip",
                         color = Color.White,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
                     )
                 }
             }
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Onboarding High-Res Artwork Overlay
-            Image(
-                painter = painterResource(id = R.drawable.onboarding_page),
-                contentDescription = "Onboarding Feature Graphic",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .fillMaxWidth(0.92f)
-                    .height(300.dp)
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Bottom Onboarding Action & Indicator Section
+            // Bottom Action & Indicator Section
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -118,13 +100,13 @@ fun OnboardingScreen(
                         modifier = Modifier
                             .size(6.dp)
                             .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.4f))
+                            .background(Color.White.copy(alpha = 0.5f))
                     )
                     Box(
                         modifier = Modifier
                             .size(6.dp)
                             .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.4f))
+                            .background(Color.White.copy(alpha = 0.5f))
                     )
                 }
 
