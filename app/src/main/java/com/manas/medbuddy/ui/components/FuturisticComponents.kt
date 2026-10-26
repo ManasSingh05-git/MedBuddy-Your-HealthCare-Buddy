@@ -100,6 +100,26 @@ import com.manas.medbuddy.ui.theme.TextPrimaryDark as TextPrimary
 import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
 import com.manas.medbuddy.ui.theme.ThemeMode
 
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.manas.medbuddy.R
+
+@Composable
+fun AppBackground(
+    content: @Composable () -> Unit
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.app_background),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+        content()
+    }
+}
+
 @Composable
 fun getGlassColors(): Pair<Color, Color> {
     val themeMode = LocalThemeMode.current.value

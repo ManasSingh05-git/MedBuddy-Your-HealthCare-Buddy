@@ -73,9 +73,9 @@ fun LoginScreen(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // High-Res Background Image or Gradient
+        // High-Res App Background Image from mad project ss/background.png
         Image(
-            painter = painterResource(id = R.drawable.login_bg),
+            painter = painterResource(id = R.drawable.app_background),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()

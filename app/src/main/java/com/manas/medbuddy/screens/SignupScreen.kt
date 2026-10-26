@@ -48,6 +48,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.manas.medbuddy.R
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.material3.CircularProgressIndicator
 import com.manas.medbuddy.ui.components.GradientPillButton
@@ -70,17 +74,15 @@ fun SignupScreen(
     var isLoading by remember { mutableStateOf(false) }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF070E1A),
-                        Color(0xFF03070E)
-                    )
-                )
-            )
+        modifier = Modifier.fillMaxSize()
     ) {
+        // High-Res Background Image from mad project ss/background.png
+        Image(
+            painter = painterResource(id = R.drawable.app_background),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
