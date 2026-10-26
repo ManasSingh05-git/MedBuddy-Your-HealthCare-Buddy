@@ -33,8 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 import com.manas.medbuddy.R
-import com.manas.medbuddy.ui.components.HeartPillLogo
-import com.manas.medbuddy.ui.theme.TextPrimary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -59,9 +57,9 @@ fun SplashScreen(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // High-Res Plant & Starry Sky Background Image
+        // High-Res Plant & Starry Sky Background Image from mad project ss/backgrounf.png
         Image(
-            painter = painterResource(id = R.drawable.splash_bg),
+            painter = painterResource(id = R.drawable.backgrounf),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
@@ -77,14 +75,14 @@ fun SplashScreen(
         ) {
             Spacer(modifier = Modifier.height(10.dp))
 
-            // High-Res MedBuddy Logo Artwork Image
+            // High-Res MedBuddy Logo Artwork Image from mad project ss/logo.png
             Image(
-                painter = painterResource(id = R.drawable.medbuddy_logo),
+                painter = painterResource(id = R.drawable.logo),
                 contentDescription = "MedBuddy Logo",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .fillMaxWidth(0.85f)
-                    .height(260.dp)
+                    .fillMaxWidth(0.9f)
+                    .height(280.dp)
             )
 
             Spacer(modifier = Modifier.height(10.dp))
