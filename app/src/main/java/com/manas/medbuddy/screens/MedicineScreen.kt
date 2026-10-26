@@ -111,10 +111,11 @@ fun MedicineScreen(
     // Default sample data if firebase empty
     val displayMedicines = if (medicines.isEmpty() && !loading) {
         listOf(
-            Medicine(id = "1", name = "Paracetamol", dosage = "500 mg", time = "Daily • 9:00 AM", instructions = "1 tablet", isActive = true, isTaken = true),
-            Medicine(id = "2", name = "Vitamin D3", dosage = "1000 IU", time = "Daily • 1:00 PM", instructions = "1 tablet", isActive = true, isTaken = false),
-            Medicine(id = "3", name = "BP Tablet", dosage = "10 mg", time = "Daily • 9:00 PM", instructions = "1 tablet", isActive = true, isTaken = false),
-            Medicine(id = "4", name = "Omega 3", dosage = "500 mg", time = "Daily • 11:00 AM", instructions = "1 capsule", isActive = false, isTaken = true)
+            Medicine(id = "1", name = "Paracetamol", dosage = "500 mg", time = "Daily • 8:00 AM", instructions = "1 tablet - Daily", isActive = true, isTaken = true),
+            Medicine(id = "2", name = "Vitamin D", dosage = "1000 IU", time = "Daily • 2:00 PM", instructions = "1 tablet - Daily", isActive = true, isTaken = false),
+            Medicine(id = "3", name = "Omega 3", dosage = "500 mg", time = "Daily • 8:00 PM", instructions = "1 capsule - Daily", isActive = true, isTaken = false),
+            Medicine(id = "4", name = "Calcium", dosage = "500 mg", time = "Daily • 8:00 PM", instructions = "1 tablet - Daily", isActive = true, isTaken = true),
+            Medicine(id = "5", name = "Iron Supplement", dosage = "100 mg", time = "Daily • 10:00 AM", instructions = "1 tablet - Daily", isActive = true, isTaken = false)
         )
     } else {
         medicines

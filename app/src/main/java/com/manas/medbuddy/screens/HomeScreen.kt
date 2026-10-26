@@ -290,13 +290,8 @@ fun HomeScreen(
                     }
 
                     Column {
-                        Text("Good Morning,", color = TextSecondary, fontSize = 13.sp)
-                        Text(
-                            text = userName,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TextPrimary
-                        )
+                        Text("Good Morning Manas!", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                        Text("Mon, 25 Aug 2025", color = TextSecondary, fontSize = 13.sp)
                     }
                 }
 

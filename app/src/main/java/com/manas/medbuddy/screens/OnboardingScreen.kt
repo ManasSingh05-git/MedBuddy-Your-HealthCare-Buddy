@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -27,10 +28,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.manas.medbuddy.R
 import com.manas.medbuddy.ui.theme.EmeraldPrimary
+import com.manas.medbuddy.ui.theme.TextPrimary
+import com.manas.medbuddy.ui.theme.TextSecondary
 
 @Composable
 fun OnboardingScreen(
@@ -78,6 +82,39 @@ fun OnboardingScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // Onboarding Title & Subtitle Card
+            Surface(
+                modifier = Modifier.fillMaxWidth(0.92f),
+                shape = RoundedCornerShape(24.dp),
+                color = Color(0xCC052016)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Take Control of Your Health",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = TextPrimary,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Text(
+                        text = "Track medicines, stay active and live healthier.",
+                        fontSize = 14.sp,
+                        color = TextSecondary,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 20.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
             // Bottom Action & Indicator Section
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -110,7 +147,7 @@ fun OnboardingScreen(
                     )
                 }
 
-                // Continue / Get Started Pill Button
+                // Mint Get Started Pill Button
                 Surface(
                     onClick = onFinished,
                     modifier = Modifier
@@ -125,16 +162,16 @@ fun OnboardingScreen(
                             .background(
                                 brush = Brush.horizontalGradient(
                                     colors = listOf(
-                                        Color(0xFF00E676),
-                                        Color(0xFF1DE9B6)
+                                        Color(0xFF1DE9A0),
+                                        Color(0xFF00E676)
                                     )
                                 )
                             ),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Continue to Login →",
-                            color = Color(0xFF02160E),
+                            text = "Get Started →",
+                            color = Color(0xFF04120F),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.ExtraBold
                         )
