@@ -44,8 +44,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import com.manas.medbuddy.data.MedicineRepository
 import com.manas.medbuddy.model.Medicine
 import com.manas.medbuddy.ui.components.GlassCard
 import com.manas.medbuddy.ui.components.GradientPillButton
@@ -61,6 +62,9 @@ fun AddMedicineScreen(
     onBack: () -> Unit,
     onMedicineSaved: () -> Unit
 ) {
+    val context = LocalContext.current
+    val repository = remember { MedicineRepository(context) }
+
     var name by remember { mutableStateOf("") }
     var dosage by remember { mutableStateOf("") }
     var frequency by remember { mutableStateOf("Daily") }
@@ -70,12 +74,6 @@ fun AddMedicineScreen(
     var notes by remember { mutableStateOf("") }
     var isSaving by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
-
-    val userId = try {
-        FirebaseAuth.getInstance().currentUser?.uid
-    } catch (_: Exception) {
-        null
-    }
 
     Scaffold(
         containerColor = DarkBackground,
@@ -261,22 +259,15 @@ fun AddMedicineScreen(
                             isActive = true
                         )
 
-                        if (userId != null) {
-                            try {
-                                val ref = FirebaseDatabase.getInstance().reference.child("medicines").child(userId)
-                                val key = ref.push().key ?: newMedicine.id
-                                ref.child(key).setValue(newMedicine.copy(id = key))
-                                    .addOnCompleteListener {
-                                        isSaving = false
-                                        onMedicineSaved()
-                                    }
-                            } catch (_: Exception) {
-                                isSaving = false
+                        repository.saveMedicine(newMedicine) { success, error ->
+                            isSaving = false
+                            if (success) {
+                                Toast.makeText(context, "Medicine Saved Successfully!", Toast.LENGTH_SHORT).show()
+                                onMedicineSaved()
+                            } else {
+                                Toast.makeText(context, "Saved locally (${error ?: "Success"})", Toast.LENGTH_SHORT).show()
                                 onMedicineSaved()
                             }
-                        } else {
-                            isSaving = false
-                            onMedicineSaved()
                         }
                     }
                 }

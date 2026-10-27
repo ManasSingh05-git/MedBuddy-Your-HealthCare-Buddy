@@ -96,6 +96,10 @@ import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
 import com.manas.medbuddy.util.EmergencyCallHelper
 import com.manas.medbuddy.util.SosTapDetector
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -156,6 +160,19 @@ fun HomeScreen(
         "Manas 👋"
     }
     val userName = if (userEmail.contains("@")) userEmail.substringBefore("@") + " 👋" else userEmail
+
+    val currentCalendar = remember { Calendar.getInstance() }
+    val currentHour = remember { currentCalendar.get(Calendar.HOUR_OF_DAY) }
+    val dynamicGreeting = remember(currentHour) {
+        when (currentHour) {
+            in 4..11 -> "Good Morning"
+            in 12..16 -> "Good Afternoon"
+            else -> "Good Evening"
+        }
+    }
+    val currentDateStr = remember {
+        SimpleDateFormat("EEE, dd MMM yyyy", Locale.US).format(Date())
+    }
 
     var medicines by remember { mutableStateOf<List<Medicine>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
@@ -294,8 +311,8 @@ fun HomeScreen(
                     }
 
                     Column {
-                        Text("Good Morning Manas!", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                        Text("Mon, 25 Aug 2025", color = TextSecondary, fontSize = 13.sp)
+                        Text("$dynamicGreeting $userName", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                        Text(currentDateStr, color = TextSecondary, fontSize = 13.sp)
                     }
                 }
 
