@@ -131,6 +131,10 @@ fun HomeScreen(
     onNavigateToMenstrualTracker: () -> Unit = {},
     onNavigateToMovementCoach: () -> Unit = {},
     onNavigateToMoreHealthOptions: () -> Unit = {},
+    onNavigateToRefillPlanner: () -> Unit = {},
+    onNavigateToExpenseTracker: () -> Unit = {},
+    onNavigateToInsuranceOrganizer: () -> Unit = {},
+    onNavigateToHospitalChecklist: () -> Unit = {},
     onNavigateToTools: () -> Unit = {},
     onNavigateToAssistant: () -> Unit = {},
     onLogout: () -> Unit = {}
