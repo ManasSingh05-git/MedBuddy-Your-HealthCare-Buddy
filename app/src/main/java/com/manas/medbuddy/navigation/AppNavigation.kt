@@ -12,6 +12,7 @@ import com.manas.medbuddy.screens.AddMedicineScreen
 import com.manas.medbuddy.screens.AiHealthInsightsScreen
 import com.manas.medbuddy.screens.AllergyRegistryScreen
 import com.manas.medbuddy.screens.AppointmentOrganizerScreen
+import com.manas.medbuddy.screens.AppointmentsScreen
 import com.manas.medbuddy.screens.ExpenseTrackerScreen
 import com.manas.medbuddy.screens.ForgotPasswordScreen
 import com.manas.medbuddy.screens.HealthCardScreen
@@ -24,20 +25,26 @@ import com.manas.medbuddy.screens.HospitalDetailsScreen
 import com.manas.medbuddy.screens.HospitalFinderScreen
 import com.manas.medbuddy.screens.InsuranceOrganizerScreen
 import com.manas.medbuddy.screens.LoginScreen
+import com.manas.medbuddy.screens.MedBuddyAiScreen
 import com.manas.medbuddy.screens.MedicalVaultScreen
 import com.manas.medbuddy.screens.MedicineListScreen
 import com.manas.medbuddy.screens.MedicineReminderScreen
 import com.manas.medbuddy.screens.MedicineScreen
+import com.manas.medbuddy.screens.MoreHealthOptionsScreen
+import com.manas.medbuddy.screens.PersonalInformationScreen
 import com.manas.medbuddy.screens.PrescriptionScannerScreen
 import com.manas.medbuddy.screens.ProfileScreen
 import com.manas.medbuddy.screens.RefillPlannerScreen
 import com.manas.medbuddy.screens.ReportExplainerScreen
+import com.manas.medbuddy.screens.ReportsScreen
 import com.manas.medbuddy.screens.SettingsScreen
 import com.manas.medbuddy.screens.SignupScreen
 import com.manas.medbuddy.screens.SleepReminderScreen
 import com.manas.medbuddy.screens.SleepTrackerScreen
+import com.manas.medbuddy.screens.SosScreen
 import com.manas.medbuddy.screens.SosSettingsScreen
 import com.manas.medbuddy.screens.SplashScreen
+import com.manas.medbuddy.screens.ToolsScreen
 import com.manas.medbuddy.screens.VaccinationManagerScreen
 import com.manas.medbuddy.screens.WaterIntakeScreen
 
@@ -47,6 +54,12 @@ object Routes {
     const val Signup = "signup"
     const val ForgotPassword = "forgot_password"
     const val Home = "home"
+    const val Tools = "tools"
+    const val Assistant = "assistant"
+    const val Appointments = "appointments"
+    const val Reports = "reports"
+    const val SosEmergency = "sos_emergency"
+    const val MoreHealthOptions = "more_health_options"
     const val MedicineList = "medicine_list"
     const val AddEditMedicine = "add_edit_medicine"
     const val Medicines = "medicines"
@@ -66,6 +79,7 @@ object Routes {
     const val HospitalChecklist = "hospital_checklist"
     const val Health = "health"
     const val Profile = "profile"
+    const val PersonalInformation = "personal_information"
     const val Settings = "settings"
     const val SosSettings = "sos_settings"
     const val HospitalFinder = "hospital_finder"
@@ -147,10 +161,10 @@ fun AppNavigation(
                 onEditMedicine = { medicineId ->
                     navController.navigate("${Routes.AddEditMedicine}?medicineId=$medicineId")
                 },
-                onNavigateToMedicines = { navController.navigate(Routes.MedicineList) },
+                onNavigateToMedicines = { navController.navigate(Routes.Medicines) },
                 onNavigateToHealth = { navController.navigate(Routes.Health) },
                 onNavigateToSettings = { navController.navigate(Routes.Profile) },
-                onNavigateToSosSettings = { navController.navigate(Routes.SosSettings) },
+                onNavigateToSosSettings = { navController.navigate(Routes.SosEmergency) },
                 onNavigateToHospitalFinder = { navController.navigate(Routes.HospitalFinder) },
                 onNavigateToHealthMap = { navController.navigate(Routes.HealthMap) },
                 onNavigateToSleepTracker = { navController.navigate(Routes.SleepTracker) },
@@ -166,6 +180,9 @@ fun AppNavigation(
                 onNavigateToExpenseTracker = { navController.navigate(Routes.ExpenseTracker) },
                 onNavigateToInsuranceOrganizer = { navController.navigate(Routes.InsuranceOrganizer) },
                 onNavigateToHospitalChecklist = { navController.navigate(Routes.HospitalChecklist) },
+                onNavigateToTools = { navController.navigate(Routes.Tools) },
+                onNavigateToAssistant = { navController.navigate(Routes.Assistant) },
+                onNavigateToMoreHealthOptions = { navController.navigate(Routes.MoreHealthOptions) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -174,6 +191,60 @@ fun AppNavigation(
                         launchSingleTop = true
                     }
                 }
+            )
+        }
+
+        // Tools Screen
+        composable(Routes.Tools) {
+            ToolsScreen(
+                onNavigateToRoute = { route ->
+                    if (route.isNotBlank()) navController.navigate(route)
+                },
+                onTabSelected = { tab ->
+                    handleBottomTabNavigation(navController, tab)
+                }
+            )
+        }
+
+        // Dedicated More Health Options Hub Screen
+        composable(Routes.MoreHealthOptions) {
+            MoreHealthOptionsScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToRoute = { route ->
+                    if (route.isNotBlank()) navController.navigate(route)
+                }
+            )
+        }
+
+        // AI Assistant Screen
+        composable(Routes.Assistant) {
+            MedBuddyAiScreen(
+                onBack = { navController.popBackStack() },
+                onTabSelected = { tab ->
+                    handleBottomTabNavigation(navController, tab)
+                }
+            )
+        }
+
+        // Appointments Screen
+        composable(Routes.Appointments) {
+            AppointmentsScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Reports Screen
+        composable(Routes.Reports) {
+            ReportsScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // SOS Emergency Screen
+        composable(Routes.SosEmergency) {
+            SosScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToSosSettings = { navController.navigate(Routes.SosSettings) }
             )
         }
 
@@ -255,12 +326,20 @@ fun AppNavigation(
             SettingsScreen(
                 onNavigateToSosSettings = { navController.navigate(Routes.SosSettings) },
                 onNavigateToSleepReminders = { navController.navigate(Routes.SleepReminders) },
+                onNavigateToPersonalInformation = { navController.navigate(Routes.PersonalInformation) },
                 onBack = { navController.popBackStack() },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) { inclusive = true }
                     }
                 }
+            )
+        }
+
+        // Personal Information Screen
+        composable(Routes.PersonalInformation) {
+            PersonalInformationScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
@@ -375,6 +454,12 @@ fun AppNavigation(
                 onNavigateToSettings = {
                     navController.navigate(Routes.Settings)
                 },
+                onNavigateToRoute = { route ->
+                    if (route.isNotBlank()) navController.navigate(route)
+                },
+                onTabSelected = { tab ->
+                    handleBottomTabNavigation(navController, tab)
+                },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -389,6 +474,13 @@ fun AppNavigation(
         // Hospital Finder
         composable(Routes.HospitalFinder) {
             HospitalFinderScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Hospital Details Screen
+        composable(Routes.HospitalDetails) {
+            HospitalDetailsScreen(
                 onBack = { navController.popBackStack() }
             )
         }
@@ -427,6 +519,16 @@ fun AppNavigation(
                 onBack = { navController.popBackStack() }
             )
         }
+    }
+}
+
+private fun handleBottomTabNavigation(navController: NavHostController, tab: String) {
+    when (tab) {
+        "home" -> navController.navigate(Routes.Home) { launchSingleTop = true }
+        "tools" -> navController.navigate(Routes.Tools) { launchSingleTop = true }
+        "assistant" -> navController.navigate(Routes.Assistant) { launchSingleTop = true }
+        "insights" -> navController.navigate(Routes.Health) { launchSingleTop = true }
+        "profile" -> navController.navigate(Routes.Profile) { launchSingleTop = true }
     }
 }
 
