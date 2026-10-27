@@ -48,7 +48,10 @@ import com.manas.medbuddy.ui.components.GradientPillButton
 import com.manas.medbuddy.ui.theme.BlueGradient
 import com.manas.medbuddy.ui.theme.CyanPrimary
 import com.manas.medbuddy.ui.theme.DarkBackground
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
 import com.manas.medbuddy.ui.theme.DarkSurface
+import com.manas.medbuddy.tracker.WaterRepository
 import com.manas.medbuddy.ui.theme.EmeraldPrimary
 import com.manas.medbuddy.ui.theme.TextPrimaryDark as TextPrimary
 import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
@@ -58,9 +61,13 @@ import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
 fun WaterIntakeScreen(
     onBack: () -> Unit
 ) {
-    var currentWaterLiters by remember { mutableFloatStateOf(1.8f) }
-    val goalWaterLiters = 3.0f
-    val progress = (currentWaterLiters / goalWaterLiters).coerceIn(0f, 1f)
+    val context = LocalContext.current
+    val waterRepo = remember { WaterRepository.getInstance(context) }
+    val waterData by waterRepo.waterDataFlow.collectAsState()
+
+    val currentWaterLiters = waterData.currentLiters
+    val goalWaterLiters = waterData.goalLiters
+    val progress = waterData.getProgressFraction()
 
     Scaffold(
         containerColor = DarkBackground,
@@ -122,7 +129,7 @@ fun WaterIntakeScreen(
             GradientPillButton(
                 text = "+ Add 250 ml",
                 onClick = {
-                    currentWaterLiters = (currentWaterLiters + 0.25f).coerceAtMost(goalWaterLiters * 2)
+                    waterRepo.addWater(0.25f)
                 }
             )
 
@@ -131,10 +138,10 @@ fun WaterIntakeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                PresetWaterChip("250 ml", Modifier.weight(1f)) { currentWaterLiters += 0.25f }
-                PresetWaterChip("500 ml", Modifier.weight(1f)) { currentWaterLiters += 0.5f }
-                PresetWaterChip("750 ml", Modifier.weight(1f)) { currentWaterLiters += 0.75f }
-                PresetWaterChip("1 L", Modifier.weight(1f)) { currentWaterLiters += 1.0f }
+                PresetWaterChip("250 ml", Modifier.weight(1f)) { waterRepo.addWater(0.25f) }
+                PresetWaterChip("500 ml", Modifier.weight(1f)) { waterRepo.addWater(0.50f) }
+                PresetWaterChip("750 ml", Modifier.weight(1f)) { waterRepo.addWater(0.75f) }
+                PresetWaterChip("1 L", Modifier.weight(1f)) { waterRepo.addWater(1.00f) }
             }
 
             // Today's Progress Card

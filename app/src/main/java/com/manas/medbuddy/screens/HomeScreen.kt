@@ -54,6 +54,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -94,8 +95,11 @@ import com.manas.medbuddy.ui.theme.SOSRed
 import com.manas.medbuddy.ui.theme.TextPrimaryDark as TextPrimary
 import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
 import com.manas.medbuddy.util.EmergencyCallHelper
+import com.manas.medbuddy.tracker.StepCounterManager
+import com.manas.medbuddy.tracker.WaterRepository
 import com.manas.medbuddy.util.SosTapDetector
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -140,6 +144,11 @@ fun HomeScreen(
 
     val contactRepo = remember { EmergencyContactRepository.getInstance(context) }
     val hospitalRepo = remember { HospitalRepository(context) }
+    val stepManager = remember { StepCounterManager.getInstance(context) }
+    val waterRepo = remember { WaterRepository.getInstance(context) }
+
+    val stepData by stepManager.stepDataFlow.collectAsState()
+    val waterData by waterRepo.waterDataFlow.collectAsState()
 
     val userId = try {
         FirebaseAuth.getInstance().currentUser?.uid
@@ -361,8 +370,8 @@ fun HomeScreen(
                     DashboardGridStatCard(
                         icon = "👟",
                         title = "Steps",
-                        value = "5,420",
-                        sublabel = "70% of goal",
+                        value = String.format(Locale.US, "%,d", stepData.stepsToday),
+                        sublabel = "${(stepData.getFormattedProgress() * 100).toInt()}% of goal",
                         accentColor = EmeraldPrimary,
                         modifier = Modifier.weight(1f),
                         onClick = onNavigateToHealth
@@ -385,7 +394,7 @@ fun HomeScreen(
                     DashboardGridStatCard(
                         icon = "🔥",
                         title = "Calories",
-                        value = "320 kcal",
+                        value = "${stepData.caloriesKcal} kcal",
                         sublabel = "Today",
                         accentColor = SOSRed,
                         modifier = Modifier.weight(1f),
@@ -394,8 +403,8 @@ fun HomeScreen(
                     DashboardGridStatCard(
                         icon = "💧",
                         title = "Water",
-                        value = "1.8 L",
-                        sublabel = "60% of goal",
+                        value = String.format(Locale.US, "%.1f L", waterData.currentLiters),
+                        sublabel = "${waterData.getProgressPercentage()}% of goal",
                         accentColor = CyanPrimary,
                         modifier = Modifier.weight(1f),
                         onClick = onNavigateToHealth

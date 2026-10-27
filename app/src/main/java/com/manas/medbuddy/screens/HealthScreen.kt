@@ -35,7 +35,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
+import com.manas.medbuddy.tracker.StepCounterManager
+import java.util.Locale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -55,6 +58,10 @@ import com.manas.medbuddy.ui.theme.TextSecondaryDark as TextSecondary
 fun HealthScreen(
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    val stepManager = remember { StepCounterManager.getInstance(context) }
+    val stepData by stepManager.stepDataFlow.collectAsState()
+
     var selectedTab by remember { mutableStateOf("Today") } // "Today", "Week", "Month"
 
     Scaffold(
@@ -117,7 +124,7 @@ fun HealthScreen(
                 contentAlignment = Alignment.Center
             ) {
                 AnimatedProgressRing(
-                    progress = 0.54f,
+                    progress = stepData.getFormattedProgress(),
                     modifier = Modifier.size(200.dp),
                     colors = listOf(EmeraldPrimary, CyanPrimary),
                     strokeWidth = 20f
@@ -128,7 +135,7 @@ fun HealthScreen(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text("👟", fontSize = 28.sp)
-                    Text("5,420", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = TextPrimary)
+                    Text(String.format(Locale.US, "%,d", stepData.stepsToday), fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = TextPrimary)
                     Text("Steps", fontSize = 14.sp, color = TextSecondary)
                     Text("Goal: 10,000 steps", fontSize = 12.sp, color = CyanPrimary, fontWeight = FontWeight.SemiBold)
                 }
@@ -139,9 +146,9 @@ fun HealthScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                HealthStatPill("📍", "3.2 km", "Distance", Modifier.weight(1f))
-                HealthStatPill("🔥", "320 kcal", "Calories", Modifier.weight(1f))
-                HealthStatPill("⏱️", "45 min", "Active Time", Modifier.weight(1f))
+                HealthStatPill("📍", String.format(Locale.US, "%.1f km", stepData.distanceKm), "Distance", Modifier.weight(1f))
+                HealthStatPill("🔥", "${stepData.caloriesKcal} kcal", "Calories", Modifier.weight(1f))
+                HealthStatPill("⏱️", "${stepData.activeMinutes} min", "Active Time", Modifier.weight(1f))
             }
 
             // Weekly Steps Bar Chart
