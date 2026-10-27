@@ -9,67 +9,44 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.manas.medbuddy.screens.AddEditMedicineScreen
 import com.manas.medbuddy.screens.AddMedicineScreen
-import com.manas.medbuddy.screens.AdherenceReportScreen
 import com.manas.medbuddy.screens.AiHealthInsightsScreen
 import com.manas.medbuddy.screens.AllergyRegistryScreen
 import com.manas.medbuddy.screens.AppointmentOrganizerScreen
-import com.manas.medbuddy.screens.AppointmentsScreen
-import com.manas.medbuddy.screens.CaregiverDashboardScreen
-import com.manas.medbuddy.screens.DoctorPrepScreen
-import com.manas.medbuddy.screens.DocumentSharingScreen
-import com.manas.medbuddy.screens.FamilyCalendarScreen
-import com.manas.medbuddy.screens.FamilyProfilesScreen
+import com.manas.medbuddy.screens.ExpenseTrackerScreen
 import com.manas.medbuddy.screens.ForgotPasswordScreen
 import com.manas.medbuddy.screens.HealthCardScreen
 import com.manas.medbuddy.screens.HealthMapScreen
 import com.manas.medbuddy.screens.HealthScreen
 import com.manas.medbuddy.screens.HealthTimelineScreen
 import com.manas.medbuddy.screens.HomeScreen
+import com.manas.medbuddy.screens.HospitalChecklistScreen
 import com.manas.medbuddy.screens.HospitalDetailsScreen
 import com.manas.medbuddy.screens.HospitalFinderScreen
+import com.manas.medbuddy.screens.InsuranceOrganizerScreen
 import com.manas.medbuddy.screens.LoginScreen
-import com.manas.medbuddy.screens.MedBuddyAiScreen
-import com.manas.medbuddy.screens.MedicalGlossaryScreen
 import com.manas.medbuddy.screens.MedicalVaultScreen
 import com.manas.medbuddy.screens.MedicineListScreen
 import com.manas.medbuddy.screens.MedicineReminderScreen
 import com.manas.medbuddy.screens.MedicineScreen
-import com.manas.medbuddy.screens.MenstrualTrackerScreen
-import com.manas.medbuddy.screens.MoreHealthOptionsScreen
-import com.manas.medbuddy.screens.MovementCoachScreen
-import com.manas.medbuddy.screens.OnboardingScreen
-import com.manas.medbuddy.screens.PersonalInformationScreen
 import com.manas.medbuddy.screens.PrescriptionScannerScreen
 import com.manas.medbuddy.screens.ProfileScreen
-import com.manas.medbuddy.screens.ReportComparisonScreen
+import com.manas.medbuddy.screens.RefillPlannerScreen
 import com.manas.medbuddy.screens.ReportExplainerScreen
-import com.manas.medbuddy.screens.ReportsScreen
 import com.manas.medbuddy.screens.SettingsScreen
 import com.manas.medbuddy.screens.SignupScreen
 import com.manas.medbuddy.screens.SleepReminderScreen
 import com.manas.medbuddy.screens.SleepTrackerScreen
-import com.manas.medbuddy.screens.SosScreen
 import com.manas.medbuddy.screens.SosSettingsScreen
 import com.manas.medbuddy.screens.SplashScreen
-import com.manas.medbuddy.screens.SymptomJournalScreen
-import com.manas.medbuddy.screens.ToolsScreen
 import com.manas.medbuddy.screens.VaccinationManagerScreen
 import com.manas.medbuddy.screens.WaterIntakeScreen
-import com.manas.medbuddy.screens.WellnessCoachScreen
 
 object Routes {
     const val Splash = "splash"
-    const val Onboarding = "onboarding"
     const val Login = "login"
     const val Signup = "signup"
     const val ForgotPassword = "forgot_password"
     const val Home = "home"
-    const val Tools = "tools"
-    const val MoreHealthOptions = "more_health_options"
-    const val Assistant = "assistant"
-    const val Appointments = "appointments"
-    const val Reports = "reports"
-    const val SosEmergency = "sos_emergency"
     const val MedicineList = "medicine_list"
     const val AddEditMedicine = "add_edit_medicine"
     const val Medicines = "medicines"
@@ -82,9 +59,13 @@ object Routes {
     const val VaccinationManager = "vaccination_manager"
     const val HealthTimeline = "health_timeline"
     const val HealthCard = "health_card"
+    const val AppointmentOrganizer = "appointment_organizer"
+    const val RefillPlanner = "refill_planner"
+    const val ExpenseTracker = "expense_tracker"
+    const val InsuranceOrganizer = "insurance_organizer"
+    const val HospitalChecklist = "hospital_checklist"
     const val Health = "health"
     const val Profile = "profile"
-    const val PersonalInformation = "personal_information"
     const val Settings = "settings"
     const val SosSettings = "sos_settings"
     const val HospitalFinder = "hospital_finder"
@@ -94,19 +75,6 @@ object Routes {
     const val SleepReminders = "sleep_reminders"
     const val WaterTracker = "water_tracker"
     const val AiInsights = "ai_insights"
-    const val SymptomJournal = "symptom_journal"
-    const val DoctorPrep = "doctor_prep"
-    const val MedicalGlossary = "medical_glossary"
-    const val WellnessCoach = "wellness_coach"
-    const val ReportComparison = "report_comparison"
-    const val FamilyProfiles = "family_profiles"
-    const val CaregiverDashboard = "caregiver_dashboard"
-    const val FamilyCalendar = "family_calendar"
-    const val AdherenceReports = "adherence_reports"
-    const val DocumentSharing = "document_sharing"
-    const val MenstrualTracker = "menstrual_tracker"
-    const val MovementCoach = "movement_coach"
-    const val AppointmentOrganizer = "appointment_organizer"
 }
 
 @Composable
@@ -122,7 +90,7 @@ fun AppNavigation(
         composable(Routes.Splash) {
             SplashScreen(
                 onFinished = {
-                    navController.navigate(Routes.Onboarding) {
+                    navController.navigate(Routes.Login) {
                         popUpTo(Routes.Splash) {
                             inclusive = true
                         }
@@ -131,20 +99,6 @@ fun AppNavigation(
                 },
                 onAlreadyAuthenticated = {
                     navController.navigateToHome()
-                }
-            )
-        }
-
-        // Onboarding Screen
-        composable(Routes.Onboarding) {
-            OnboardingScreen(
-                onFinished = {
-                    navController.navigate(Routes.Login) {
-                        popUpTo(Routes.Onboarding) {
-                            inclusive = true
-                        }
-                        launchSingleTop = true
-                    }
                 }
             )
         }
@@ -193,10 +147,10 @@ fun AppNavigation(
                 onEditMedicine = { medicineId ->
                     navController.navigate("${Routes.AddEditMedicine}?medicineId=$medicineId")
                 },
-                onNavigateToMedicines = { navController.navigate(Routes.Medicines) },
+                onNavigateToMedicines = { navController.navigate(Routes.MedicineList) },
                 onNavigateToHealth = { navController.navigate(Routes.Health) },
                 onNavigateToSettings = { navController.navigate(Routes.Profile) },
-                onNavigateToSosSettings = { navController.navigate(Routes.SosEmergency) },
+                onNavigateToSosSettings = { navController.navigate(Routes.SosSettings) },
                 onNavigateToHospitalFinder = { navController.navigate(Routes.HospitalFinder) },
                 onNavigateToHealthMap = { navController.navigate(Routes.HealthMap) },
                 onNavigateToSleepTracker = { navController.navigate(Routes.SleepTracker) },
@@ -207,21 +161,11 @@ fun AppNavigation(
                 onNavigateToVaccinationManager = { navController.navigate(Routes.VaccinationManager) },
                 onNavigateToHealthTimeline = { navController.navigate(Routes.HealthTimeline) },
                 onNavigateToHealthCard = { navController.navigate(Routes.HealthCard) },
-                onNavigateToSymptomJournal = { navController.navigate(Routes.SymptomJournal) },
-                onNavigateToDoctorPrep = { navController.navigate(Routes.DoctorPrep) },
-                onNavigateToMedicalGlossary = { navController.navigate(Routes.MedicalGlossary) },
-                onNavigateToWellnessCoach = { navController.navigate(Routes.WellnessCoach) },
-                onNavigateToReportComparison = { navController.navigate(Routes.ReportComparison) },
-                onNavigateToFamilyProfiles = { navController.navigate(Routes.FamilyProfiles) },
-                onNavigateToCaregiverDashboard = { navController.navigate(Routes.CaregiverDashboard) },
-                onNavigateToFamilyCalendar = { navController.navigate(Routes.FamilyCalendar) },
-                onNavigateToAdherenceReports = { navController.navigate(Routes.AdherenceReports) },
-                onNavigateToDocumentSharing = { navController.navigate(Routes.DocumentSharing) },
-                onNavigateToMenstrualTracker = { navController.navigate(Routes.MenstrualTracker) },
-                onNavigateToMovementCoach = { navController.navigate(Routes.MovementCoach) },
-                onNavigateToMoreHealthOptions = { navController.navigate(Routes.MoreHealthOptions) },
-                onNavigateToTools = { navController.navigate(Routes.Tools) },
-                onNavigateToAssistant = { navController.navigate(Routes.Assistant) },
+                onNavigateToAppointmentOrganizer = { navController.navigate(Routes.AppointmentOrganizer) },
+                onNavigateToRefillPlanner = { navController.navigate(Routes.RefillPlanner) },
+                onNavigateToExpenseTracker = { navController.navigate(Routes.ExpenseTracker) },
+                onNavigateToInsuranceOrganizer = { navController.navigate(Routes.InsuranceOrganizer) },
+                onNavigateToHospitalChecklist = { navController.navigate(Routes.HospitalChecklist) },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -233,57 +177,38 @@ fun AppNavigation(
             )
         }
 
-        // More Tools Screen
-        composable(Routes.Tools) {
-            ToolsScreen(
-                onNavigateToRoute = { route ->
-                    if (route.isNotBlank()) navController.navigate(route)
-                },
-                onTabSelected = { tab ->
-                    handleBottomTabNavigation(navController, tab)
-                }
-            )
-        }
-
-        // Dedicated More Health Options Hub Screen
-        composable(Routes.MoreHealthOptions) {
-            MoreHealthOptionsScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToRoute = { route ->
-                    if (route.isNotBlank()) navController.navigate(route)
-                }
-            )
-        }
-
-        // AI Assistant Screen
-        composable(Routes.Assistant) {
-            MedBuddyAiScreen(
-                onBack = { navController.popBackStack() },
-                onTabSelected = { tab ->
-                    handleBottomTabNavigation(navController, tab)
-                }
-            )
-        }
-
-        // Appointments Screen
-        composable(Routes.Appointments) {
-            AppointmentsScreen(
+        // Hospital Visit Checklist Screen
+        composable(Routes.HospitalChecklist) {
+            HospitalChecklistScreen(
                 onBack = { navController.popBackStack() }
             )
         }
 
-        // Reports Screen
-        composable(Routes.Reports) {
-            ReportsScreen(
+        // Insurance Organizer Screen
+        composable(Routes.InsuranceOrganizer) {
+            InsuranceOrganizerScreen(
                 onBack = { navController.popBackStack() }
             )
         }
 
-        // SOS Emergency Screen
-        composable(Routes.SosEmergency) {
-            SosScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToSosSettings = { navController.navigate(Routes.SosSettings) }
+        // Expense Tracker Screen
+        composable(Routes.ExpenseTracker) {
+            ExpenseTrackerScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Refill Planner Screen
+        composable(Routes.RefillPlanner) {
+            RefillPlannerScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Appointment Organizer Screen
+        composable(Routes.AppointmentOrganizer) {
+            AppointmentOrganizerScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
@@ -330,20 +255,12 @@ fun AppNavigation(
             SettingsScreen(
                 onNavigateToSosSettings = { navController.navigate(Routes.SosSettings) },
                 onNavigateToSleepReminders = { navController.navigate(Routes.SleepReminders) },
-                onNavigateToPersonalInformation = { navController.navigate(Routes.PersonalInformation) },
                 onBack = { navController.popBackStack() },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) { inclusive = true }
                     }
                 }
-            )
-        }
-
-        // Personal Information Screen
-        composable(Routes.PersonalInformation) {
-            PersonalInformationScreen(
-                onBack = { navController.popBackStack() }
             )
         }
 
@@ -458,9 +375,6 @@ fun AppNavigation(
                 onNavigateToSettings = {
                     navController.navigate(Routes.Settings)
                 },
-                onTabSelected = { tab ->
-                    handleBottomTabNavigation(navController, tab)
-                },
                 onLogout = {
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Home) {
@@ -475,13 +389,6 @@ fun AppNavigation(
         // Hospital Finder
         composable(Routes.HospitalFinder) {
             HospitalFinderScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        // Hospital Details Screen
-        composable(Routes.HospitalDetails) {
-            HospitalDetailsScreen(
                 onBack = { navController.popBackStack() }
             )
         }
@@ -507,84 +414,6 @@ fun AppNavigation(
             )
         }
 
-        composable(Routes.SymptomJournal) {
-            SymptomJournalScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Routes.DoctorPrep) {
-            DoctorPrepScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Routes.MedicalGlossary) {
-            MedicalGlossaryScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Routes.WellnessCoach) {
-            WellnessCoachScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Routes.ReportComparison) {
-            ReportComparisonScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Routes.FamilyProfiles) {
-            FamilyProfilesScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Routes.CaregiverDashboard) {
-            CaregiverDashboardScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Routes.FamilyCalendar) {
-            FamilyCalendarScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Routes.AdherenceReports) {
-            AdherenceReportScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Routes.DocumentSharing) {
-            DocumentSharingScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Routes.MenstrualTracker) {
-            MenstrualTrackerScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Routes.MovementCoach) {
-            MovementCoachScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Routes.AppointmentOrganizer) {
-            AppointmentOrganizerScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
         // Water Tracker
         composable(Routes.WaterTracker) {
             WaterIntakeScreen(
@@ -598,16 +427,6 @@ fun AppNavigation(
                 onBack = { navController.popBackStack() }
             )
         }
-    }
-}
-
-private fun handleBottomTabNavigation(navController: NavHostController, tab: String) {
-    when (tab) {
-        "home" -> navController.navigate(Routes.Home) { launchSingleTop = true }
-        "tools" -> navController.navigate(Routes.Tools) { launchSingleTop = true }
-        "assistant" -> navController.navigate(Routes.Assistant) { launchSingleTop = true }
-        "insights" -> navController.navigate(Routes.Health) { launchSingleTop = true }
-        "profile" -> navController.navigate(Routes.Profile) { launchSingleTop = true }
     }
 }
 
