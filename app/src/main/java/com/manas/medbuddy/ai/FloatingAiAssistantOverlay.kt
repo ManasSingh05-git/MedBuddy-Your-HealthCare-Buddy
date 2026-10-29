@@ -15,6 +15,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -97,14 +103,25 @@ fun FloatingAiAssistantOverlay(
         }
     }
 
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
+
     Box(modifier = Modifier.fillMaxSize()) {
         content()
 
-        // Floating AI Mascot Hover FAB (Bottom Right Position)
+        // Floating Draggable AI Mascot Hover FAB (Moveable across screen)
         Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(bottom = 85.dp, end = 16.dp)
+                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                .pointerInput(Unit) {
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        offsetX += dragAmount.x
+                        offsetY += dragAmount.y
+                    }
+                }
                 .size(62.dp)
                 .clip(CircleShape)
                 .background(
